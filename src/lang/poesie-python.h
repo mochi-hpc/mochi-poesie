@@ -1,0 +1,8 @@
+#ifndef __POESIE_PYTHON_H
+#define __POESIE_PYTHON_H
+
+#include "src/poesie-vm.h"
+
+int poesie_py_vm_init(poesie_vm_t vm, const char* vm_name);
+
+#endif

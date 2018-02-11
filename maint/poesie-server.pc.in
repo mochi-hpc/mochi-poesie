@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: poesie-server
+Description: services-based POESIE server
+Version: 0.1
+URL: https://xgitlab.cels.anl.gov/sds/poesie
+Requires: margo @SERVER_DEPS@
+Libs: -L${libdir} -lpoesie-server @SERVER_LIBS@
+Cflags: -I${includedir}
