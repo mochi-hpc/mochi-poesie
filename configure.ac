@@ -91,7 +91,7 @@ if test "x${lua_backend}" == xyes ; then
 	AC_CHECK_HEADERS([lua.h], ,
 			 AC_ERROR("Could not find Lua headers"))
 	AC_DEFINE([USE_LUA], 1, [use Lua language backend])
-	SERVER_LIBS="${SERVER_LIBS} -llua -ldl"
+	SERVER_LIBS="${SERVER_LIBS} -llua -ldl -lm"
 	SERVER_DEPS="${SERVER_DEPS}" # no pkgconfig for Lua
 fi
 
