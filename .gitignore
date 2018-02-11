@@ -1,0 +1,15 @@
+Makefile.in
+aclocal.m4
+ar-lib
+autom4te.cache/
+build/
+compile
+config.guess
+config.sub
+configure
+depcomp
+install-sh
+ltmain.sh
+m4/
+missing
+src/poesie-config.h.in
