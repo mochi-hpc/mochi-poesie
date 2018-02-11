@@ -13,3 +13,4 @@ ltmain.sh
 m4/
 missing
 src/poesie-config.h.in
+src/poesie-config.h.in~
