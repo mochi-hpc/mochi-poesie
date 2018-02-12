@@ -25,4 +25,13 @@ MERCURY_GEN_PROC(execute_in_t, ((int64_t)(vm_id))\
 MERCURY_GEN_PROC(execute_out_t, ((int32_t)(ret))\
         ((hg_string_t)(output)))
 
+// ------------- CREATE_VM ------------- //
+MERCURY_GEN_PROC(create_vm_in_t, ((hg_string_t)(name))\
+        ((int32_t)(lang)))
+MERCURY_GEN_PROC(create_vm_out_t, ((int32_t)(ret))\
+        ((int64_t)(vm_id)))
+
+// ------------- DELETE_VM ------------- //
+MERCURY_GEN_PROC(delete_vm_in_t, ((int64_t)(vm_id)))
+MERCURY_GEN_PROC(delete_vm_out_t, ((int32_t)(ret)))
 #endif

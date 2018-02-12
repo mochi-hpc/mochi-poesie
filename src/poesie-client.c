@@ -6,6 +6,8 @@ struct poesie_client {
 
     hg_id_t poesie_get_vm_info_id;
     hg_id_t poesie_execute_id;
+    hg_id_t poesie_create_vm_id;
+    hg_id_t poesie_delete_vm_id;
 
     uint64_t num_provider_handles;
 };
@@ -30,6 +32,8 @@ static int poesie_client_register(poesie_client_t client, margo_instance_id mid)
 
         margo_registered_name(mid, "poesie_get_vm_info_rpc", &client->poesie_get_vm_info_id, &flag);
         margo_registered_name(mid, "poesie_execute_rpc",     &client->poesie_execute_id,     &flag);
+        margo_registered_name(mid, "poesie_create_vm_rpc",   &client->poesie_create_vm_id,   &flag);
+        margo_registered_name(mid, "poesie_delete_vm_rpc",   &client->poesie_delete_vm_id,   &flag);
 
     } else {
 
@@ -37,6 +41,10 @@ static int poesie_client_register(poesie_client_t client, margo_instance_id mid)
             MARGO_REGISTER(mid, "poesie_get_vm_info_rpc", get_vm_info_in_t, get_vm_info_out_t, NULL);
         client->poesie_execute_id =
             MARGO_REGISTER(mid, "poesie_execute_rpc", execute_in_t, execute_out_t, NULL);
+        client->poesie_create_vm_id =
+            MARGO_REGISTER(mid, "poesie_create_vm_rpc", create_vm_in_t, create_vm_out_t, NULL);
+        client->poesie_delete_vm_id =
+            MARGO_REGISTER(mid, "poesie_delete_vm_rpc", delete_vm_in_t, delete_vm_out_t, NULL);
     }
 
     return POESIE_SUCCESS;
@@ -170,6 +178,119 @@ int poesie_get_vm_info(
     return ret;
 }
 
+int poesie_create_vm(
+        poesie_provider_handle_t provider,
+        const char* vm_name,
+        poesie_lang_t language,
+        poesie_vm_id_t* vm_id)
+{
+    hg_return_t hret;
+    int ret;
+    hg_handle_t handle;
+
+    create_vm_in_t in;
+    create_vm_out_t out;
+
+    in.lang    = language;
+    in.name = (char*)vm_name;
+
+    /* create handle */
+    hret = margo_create(
+            provider->client->mid,
+            provider->addr,
+            provider->client->poesie_create_vm_id,
+            &handle);
+    if(hret != HG_SUCCESS) {
+        fprintf(stderr,"[POESIE] margo_create() failed in poesie_create_vm()\n");
+        return POESIE_ERR_MERCURY;
+    }
+
+    hret = margo_set_target_id(handle, provider->mplex_id);
+
+    if(hret != HG_SUCCESS) {
+        fprintf(stderr,"[POESIE] margo_set_target_id() failed in poesie_create_vm()\n");
+        margo_destroy(handle);
+        return POESIE_ERR_MERCURY;
+    }
+
+    hret = margo_forward(handle, &in);
+    if(hret != HG_SUCCESS) {
+        fprintf(stderr,"[POESIE] margo_forward() failed in poesie_create_vm()\n");
+        margo_destroy(handle);
+        return POESIE_ERR_MERCURY;
+    }
+
+    hret = margo_get_output(handle, &out);
+    if(hret != HG_SUCCESS) {
+        fprintf(stderr,"[POESIE] margo_get_output() failed in poesie_create_vm()\n");
+        margo_destroy(handle);
+        return POESIE_ERR_MERCURY;
+    }
+
+    ret = out.ret;
+    if(ret == POESIE_SUCCESS)
+        *vm_id = out.vm_id;
+
+    margo_free_output(handle, &out);
+
+    margo_destroy(handle);
+    return POESIE_SUCCESS;
+}
+
+int poesie_delete_vm(
+        poesie_provider_handle_t provider,
+        poesie_vm_id_t vm_id)
+{
+    hg_return_t hret;
+    int ret;
+    hg_handle_t handle;
+
+    delete_vm_in_t in;
+    delete_vm_out_t out;
+
+    in.vm_id = vm_id;
+
+    /* create handle */
+    hret = margo_create(
+            provider->client->mid,
+            provider->addr,
+            provider->client->poesie_delete_vm_id,
+            &handle);
+    if(hret != HG_SUCCESS) {
+        fprintf(stderr,"[POESIE] margo_create() failed in poesie_delete_vm()\n");
+        return POESIE_ERR_MERCURY;
+    }
+
+    hret = margo_set_target_id(handle, provider->mplex_id);
+
+    if(hret != HG_SUCCESS) {
+        fprintf(stderr,"[POESIE] margo_set_target_id() failed in poesie_delete_vm()\n");
+        margo_destroy(handle);
+        return POESIE_ERR_MERCURY;
+    }
+
+    hret = margo_forward(handle, &in);
+    if(hret != HG_SUCCESS) {
+        fprintf(stderr,"[POESIE] margo_forward() failed in poesie_delete_vm()\n");
+        margo_destroy(handle);
+        return POESIE_ERR_MERCURY;
+    }
+
+    hret = margo_get_output(handle, &out);
+    if(hret != HG_SUCCESS) {
+        fprintf(stderr,"[POESIE] margo_get_output() failed in poesie_delete_vm()\n");
+        margo_destroy(handle);
+        return POESIE_ERR_MERCURY;
+    }
+
+    ret = out.ret;
+
+    margo_free_output(handle, &out);
+
+    margo_destroy(handle);
+    return ret;
+}
+
 int poesie_execute(
         poesie_provider_handle_t provider, 
         poesie_vm_id_t vm_id,
@@ -222,12 +343,13 @@ int poesie_execute(
     }
 
     ret = out.ret;
-    *output = strdup(out.output);
+    if(ret == POESIE_SUCCESS)
+        *output = strdup(out.output);
 
     margo_free_output(handle, &out);
 
     margo_destroy(handle);
-    return POESIE_SUCCESS;
+    return ret;
 }
 
 int poesie_shutdown_service(poesie_client_t client, hg_addr_t addr)

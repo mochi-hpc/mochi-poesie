@@ -56,4 +56,7 @@ pkgconfig_DATA = maint/poesie-server.pc \
 		 maint/poesie-client.pc
 
 
+TESTS = test/exec-test.sh
 
+TESTS_ENVIRONMENT = TIMEOUT="$(TIMEOUT)" \
+		    MKTEMP="$(MKTEMP)"

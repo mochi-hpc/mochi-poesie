@@ -88,6 +88,34 @@ int poesie_get_vm_info(
         poesie_lang_t* language);
 
 /**
+ * @brief Creates a VM on a target provider.
+ *
+ * @param handle Provider handle
+ * @param vm_name Name of the VM to create
+ * @param language Language of the VM
+ * @param vm_id Resulting VM id
+ *
+ * @return POESIE_SUCCESS or other error code from poesie-common.h
+ */
+int poesie_create_vm(
+        poesie_provider_handle_t handle,
+        const char* vm_name,
+        poesie_lang_t language,
+        poesie_vm_id_t* vm_id);
+
+/**
+ * @brief Deletes a VM created by a client.
+ *
+ * @param handle Provider handle
+ * @param vm_id Resulting VM id
+ *
+ * @return POESIE_SUCCESS or other error code from poesie-common.h
+ */
+int poesie_delete_vm(
+        poesie_provider_handle_t handle,
+        poesie_vm_id_t vm_id);
+
+/**
  * @brief Executes some code in the target VM.
  * If vm_id is POESIE_VM_ANONYMOUS then a new VM
  * will be created for the purpose of only executing

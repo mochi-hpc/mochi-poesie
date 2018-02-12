@@ -24,6 +24,8 @@ struct poesie_provider
 
 DECLARE_MARGO_RPC_HANDLER(poesie_get_vm_info_ult)
 DECLARE_MARGO_RPC_HANDLER(poesie_execute_ult)
+DECLARE_MARGO_RPC_HANDLER(poesie_create_vm_ult)
+DECLARE_MARGO_RPC_HANDLER(poesie_delete_vm_ult)
 
 poesie_vm_id_t insert_poesie_vm(poesie_provider_t provider, const char* name, poesie_vm_t vm);
 poesie_vm_id_t find_poesie_vm_id(poesie_provider_t provider, const char* name);
@@ -207,6 +209,90 @@ finish:
 }
 DEFINE_MARGO_RPC_HANDLER(poesie_get_vm_info_ult)
 
+static void poesie_create_vm_ult(hg_handle_t handle)
+{
+
+    hg_return_t   hret;
+    int ret;
+    create_vm_in_t  in;
+    create_vm_out_t out;
+    out.ret   = POESIE_SUCCESS;
+    out.vm_id = POESIE_VM_ID_INVALID;
+
+    margo_instance_id mid = margo_hg_handle_get_instance(handle);
+    assert(mid);
+    const struct hg_info* info = margo_get_info(handle);
+    poesie_provider_t provider = 
+        (poesie_provider_t)margo_registered_data_mplex(mid, info->id, info->target_id);
+    if(!provider) {
+        out.ret = POESIE_ERR_UNKNOWN_PR;
+        margo_respond(handle, &out);
+        margo_destroy(handle);
+        return;
+    }
+
+    hret = margo_get_input(handle, &in);
+    if(hret != HG_SUCCESS) {
+        out.ret = POESIE_ERR_MERCURY;
+        margo_respond(handle, &out);
+        margo_destroy(handle);
+        return;
+    }
+
+    poesie_vm_id_t vm_id;
+    out.ret = poesie_provider_add_vm(provider, in.name, in.lang, &vm_id);
+    if(out.ret == POESIE_SUCCESS)
+        out.vm_id = vm_id;
+
+finish:
+    margo_respond(handle, &out);
+    margo_free_input(handle, &in);
+    margo_destroy(handle); 
+
+    return;
+}
+DEFINE_MARGO_RPC_HANDLER(poesie_create_vm_ult)
+
+static void poesie_delete_vm_ult(hg_handle_t handle)
+{
+
+    hg_return_t   hret;
+    int ret;
+    delete_vm_in_t  in;
+    delete_vm_out_t out;
+    out.ret   = POESIE_SUCCESS;
+
+    margo_instance_id mid = margo_hg_handle_get_instance(handle);
+    assert(mid);
+    const struct hg_info* info = margo_get_info(handle);
+    poesie_provider_t provider = 
+        (poesie_provider_t)margo_registered_data_mplex(mid, info->id, info->target_id);
+    if(!provider) {
+        out.ret = POESIE_ERR_UNKNOWN_PR;
+        margo_respond(handle, &out);
+        margo_destroy(handle);
+        return;
+    }
+
+    hret = margo_get_input(handle, &in);
+    if(hret != HG_SUCCESS) {
+        out.ret = POESIE_ERR_MERCURY;
+        margo_respond(handle, &out);
+        margo_destroy(handle);
+        return;
+    }
+
+    out.ret = poesie_provider_remove_vm(provider, in.vm_id);
+
+finish:
+    margo_respond(handle, &out);
+    margo_free_input(handle, &in);
+    margo_destroy(handle); 
+
+    return;
+}
+DEFINE_MARGO_RPC_HANDLER(poesie_delete_vm_ult)
+
 static void poesie_execute_ult(hg_handle_t handle)
 {
 
@@ -287,17 +373,16 @@ static void poesie_server_finalize_cb(void *data)
 
 poesie_vm_id_t find_poesie_vm_id(poesie_provider_t provider, const char* name)
 {
-    DEBUG("Looking up VM with name %s... ", name);
     int64_t i;
     for(i=0; i < provider->vm_arr_size; i++) {
         if(provider->vms[i] == NULL)
             continue;
+        if(provider->vm_names[i] == NULL)
+            continue;
         if(strcmp(provider->vm_names[i], name) == 0) {
-            DEBUG("found at id %ld\n", i);
             return i;
         }
     }
-    DEBUG("not found\n");
     return POESIE_VM_ID_INVALID;
 }
 
@@ -307,6 +392,7 @@ int remove_poesie_vm(poesie_provider_t provider, poesie_vm_id_t id) {
         provider->vms[id] = NULL;
         free(provider->vm_names[id]);
         provider->vm_names[id] = NULL;
+        provider->num_vms -= 1;
         return 0;
     }
     return -1;
@@ -314,15 +400,13 @@ int remove_poesie_vm(poesie_provider_t provider, poesie_vm_id_t id) {
 
 poesie_vm_id_t insert_poesie_vm(poesie_provider_t provider, const char* name, poesie_vm_t vm)
 {
-    DEBUG("Adding database %s ", name);
     if(provider->vm_arr_size == 0) {
         provider->vms      = calloc(1,sizeof(vm));
         provider->vm_names = calloc(1,sizeof(char*));
         provider->vm_arr_size = 1;
         provider->num_vms     = 1;
         provider->vms[0]      = vm;
-        provider->vm_names[0] = strdup(name);
-        DEBUG("at id %ld\n", 0);
+        provider->vm_names[0] = name ? strdup(name) : NULL;
         return 0;
     }
     if(provider->num_vms == provider->vm_arr_size) {
@@ -331,11 +415,12 @@ poesie_vm_id_t insert_poesie_vm(poesie_provider_t provider, const char* name, po
         size_t new_size_names  = provider->vm_arr_size * 2 * sizeof(char*);
         provider->vms          = realloc(provider->vms, new_size_vms);
         provider->vm_names     = realloc(provider->vm_names, new_size_names);
+        memset(provider->vms + provider->vm_arr_size, 0, provider->vm_arr_size * sizeof(vm));
+        memset(provider->vm_names + provider->vm_arr_size, 0, provider->vm_arr_size * sizeof(char*));
         provider->vm_arr_size *= 2;
         provider->vms[id]      = vm;
-        provider->vm_names[id] = strdup(name);
+        provider->vm_names[id] = name ? strdup(name) : NULL;
         provider->num_vms     += 1;
-        DEBUG("at id %ld\n", id);
         return id;
     } else {
         poesie_vm_id_t id;
@@ -344,7 +429,6 @@ poesie_vm_id_t insert_poesie_vm(poesie_provider_t provider, const char* name, po
                 provider->vms[id]      = vm;
                 provider->vm_names[id] = strdup(name);
                 provider->num_vms     += 1;
-                DEBUG("at id %ld\n", id);
                 return id;
             }
         }
