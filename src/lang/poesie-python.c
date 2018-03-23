@@ -1,3 +1,8 @@
+/*
+ * (C) 2018 The University of Chicago
+ * 
+ * See COPYRIGHT in top-level directory.
+ */
 #include <python2.7/Python.h>
 #include <string.h>
 #include <stdint.h>

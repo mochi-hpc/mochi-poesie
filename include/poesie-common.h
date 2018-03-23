@@ -1,3 +1,8 @@
+/*
+ * (C) 2018 The University of Chicago
+ * 
+ * See COPYRIGHT in top-level directory.
+ */
 #ifndef __POESIE_COMMON_H 
 #define __POESIE_COMMON_H
 
