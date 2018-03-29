@@ -35,7 +35,7 @@ static void poesie_server_finalize_cb(void *data);
 
 int poesie_provider_register(
         margo_instance_id mid,
-        uint8_t mplex_id,
+        uint16_t provider_id,
         ABT_pool abt_pool,
         poesie_provider_t* provider)
 {
@@ -45,9 +45,9 @@ int poesie_provider_register(
     {
         hg_id_t id;
         hg_bool_t flag;
-        margo_registered_name_mplex(mid, "poesie_get_vm_info_rpc", mplex_id, &id, &flag);
+        margo_provider_registered_name(mid, "poesie_get_vm_info_rpc", provider_id, &id, &flag);
         if(flag == HG_TRUE) {
-            fprintf(stderr, "[POESIE] a provider with the same mplex id (%d) already exists\n", mplex_id);
+            fprintf(stderr, "[POESIE] a provider with the same id (%d) already exists\n", provider_id);
             return POESIE_ERR_MERCURY;
         }
     }
@@ -59,14 +59,14 @@ int poesie_provider_register(
 
     /* register RPCs */
     hg_id_t rpc_id;
-    rpc_id = MARGO_REGISTER_MPLEX(mid, "poesie_get_vm_info_rpc",
+    rpc_id = MARGO_REGISTER_PROVIDER(mid, "poesie_get_vm_info_rpc",
             get_vm_info_in_t, get_vm_info_out_t,
-            poesie_get_vm_info_ult, mplex_id, abt_pool);
-    margo_register_data_mplex(mid, rpc_id, mplex_id, (void*)tmp_provider, NULL);
-    rpc_id = MARGO_REGISTER_MPLEX(mid, "poesie_execute_rpc",
+            poesie_get_vm_info_ult, provider_id, abt_pool);
+    margo_register_data(mid, rpc_id, (void*)tmp_provider, NULL);
+    rpc_id = MARGO_REGISTER_PROVIDER(mid, "poesie_execute_rpc",
             execute_in_t, execute_out_t,
-            poesie_execute_ult, mplex_id, abt_pool);
-    margo_register_data_mplex(mid, rpc_id, mplex_id, (void*)tmp_provider, NULL);
+            poesie_execute_ult, provider_id, abt_pool);
+    margo_register_data(mid, rpc_id, (void*)tmp_provider, NULL);
 
     /* install the bake server finalize callback */
     margo_push_finalize_callback(mid, &poesie_server_finalize_cb, tmp_provider);
@@ -175,7 +175,7 @@ static void poesie_get_vm_info_ult(hg_handle_t handle)
     assert(mid);
     const struct hg_info* info = margo_get_info(handle);
     poesie_provider_t provider = 
-        (poesie_provider_t)margo_registered_data_mplex(mid, info->id, info->target_id);
+        (poesie_provider_t)margo_registered_data(mid, info->id);
     if(!provider) {
         out.ret = POESIE_ERR_UNKNOWN_PR;
         margo_respond(handle, &out);
@@ -223,7 +223,7 @@ static void poesie_create_vm_ult(hg_handle_t handle)
     assert(mid);
     const struct hg_info* info = margo_get_info(handle);
     poesie_provider_t provider = 
-        (poesie_provider_t)margo_registered_data_mplex(mid, info->id, info->target_id);
+        (poesie_provider_t)margo_registered_data(mid, info->id);
     if(!provider) {
         out.ret = POESIE_ERR_UNKNOWN_PR;
         margo_respond(handle, &out);
@@ -266,7 +266,7 @@ static void poesie_delete_vm_ult(hg_handle_t handle)
     assert(mid);
     const struct hg_info* info = margo_get_info(handle);
     poesie_provider_t provider = 
-        (poesie_provider_t)margo_registered_data_mplex(mid, info->id, info->target_id);
+        (poesie_provider_t)margo_registered_data(mid, info->id);
     if(!provider) {
         out.ret = POESIE_ERR_UNKNOWN_PR;
         margo_respond(handle, &out);
@@ -306,7 +306,7 @@ static void poesie_execute_ult(hg_handle_t handle)
     assert(mid);
     const struct hg_info* info = margo_get_info(handle);
     poesie_provider_t provider = 
-        (poesie_provider_t)margo_registered_data_mplex(mid, info->id, info->target_id);
+        (poesie_provider_t)margo_registered_data(mid, info->id);
     if(!provider) {
         out.ret = POESIE_ERR_UNKNOWN_PR;
         margo_respond(handle, &out);

@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 #define POESIE_ABT_POOL_DEFAULT ABT_POOL_NULL
-#define POESIE_MPLEX_ID_DEFAULT 0
+#define POESIE_PROVIDER_ID_DEFAULT 0
 #define POESIE_PROVIDER_IGNORE NULL
 #define POESIE_PROVIDER_NULL   NULL
 
@@ -33,7 +33,7 @@ typedef struct poesie_provider* poesie_provider_t;
  */
 int poesie_provider_register(
         margo_instance_id mid,
-        uint8_t mplex_id,
+        uint16_t provider_id,
         ABT_pool pool,
         poesie_provider_t* provider);
 
