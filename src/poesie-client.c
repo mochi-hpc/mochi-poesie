@@ -20,7 +20,7 @@ struct poesie_client {
 struct poesie_provider_handle {
     poesie_client_t client;
     hg_addr_t      addr;
-    uint8_t        mplex_id;
+    uint16_t       provider_id;
     uint64_t       refcount;
 };
 
@@ -83,7 +83,7 @@ int poesie_client_finalize(poesie_client_t client)
 int poesie_provider_handle_create(
         poesie_client_t client,
         hg_addr_t addr,
-        uint8_t mplex_id,
+        uint16_t provider_id,
         poesie_provider_handle_t* handle)
 {
     if(client == POESIE_CLIENT_NULL) 
@@ -101,7 +101,7 @@ int poesie_provider_handle_create(
     }
 
     provider->client   = client;
-    provider->mplex_id = mplex_id;
+    provider->provider_id = provider_id;
     provider->refcount = 1;
 
     client->num_provider_handles += 1;
@@ -152,16 +152,9 @@ int poesie_get_vm_info(
             &handle);
     if(hret != HG_SUCCESS) return POESIE_ERR_MERCURY;
 
-    hret = margo_set_target_id(handle, provider->mplex_id);
-
-    if(hret != HG_SUCCESS) {
-        margo_destroy(handle);
-        return POESIE_ERR_MERCURY;
-    }
-
     in.name = (char*)vm_name;
 
-    hret = margo_forward(handle, &in);
+    hret = margo_provider_forward(provider->provider_id, handle, &in);
     if(hret != HG_SUCCESS) {
         margo_destroy(handle);
         return POESIE_ERR_MERCURY;
@@ -210,15 +203,7 @@ int poesie_create_vm(
         return POESIE_ERR_MERCURY;
     }
 
-    hret = margo_set_target_id(handle, provider->mplex_id);
-
-    if(hret != HG_SUCCESS) {
-        fprintf(stderr,"[POESIE] margo_set_target_id() failed in poesie_create_vm()\n");
-        margo_destroy(handle);
-        return POESIE_ERR_MERCURY;
-    }
-
-    hret = margo_forward(handle, &in);
+    hret = margo_provider_forward(provider->provider_id, handle, &in);
     if(hret != HG_SUCCESS) {
         fprintf(stderr,"[POESIE] margo_forward() failed in poesie_create_vm()\n");
         margo_destroy(handle);
@@ -266,15 +251,7 @@ int poesie_delete_vm(
         return POESIE_ERR_MERCURY;
     }
 
-    hret = margo_set_target_id(handle, provider->mplex_id);
-
-    if(hret != HG_SUCCESS) {
-        fprintf(stderr,"[POESIE] margo_set_target_id() failed in poesie_delete_vm()\n");
-        margo_destroy(handle);
-        return POESIE_ERR_MERCURY;
-    }
-
-    hret = margo_forward(handle, &in);
+    hret = margo_provider_forward(provider->provider_id, handle, &in);
     if(hret != HG_SUCCESS) {
         fprintf(stderr,"[POESIE] margo_forward() failed in poesie_delete_vm()\n");
         margo_destroy(handle);
@@ -325,15 +302,7 @@ int poesie_execute(
         return POESIE_ERR_MERCURY;
     }
 
-    hret = margo_set_target_id(handle, provider->mplex_id);
-
-    if(hret != HG_SUCCESS) {
-        fprintf(stderr,"[POESIE] margo_set_target_id() failed in poesie_execute()\n");
-        margo_destroy(handle);
-        return POESIE_ERR_MERCURY;
-    }
-
-    hret = margo_forward(handle, &in);
+    hret = margo_provider_forward(provider->provider_id, handle, &in);
     if(hret != HG_SUCCESS) {
         fprintf(stderr,"[POESIE] margo_forward() failed in poesie_execute()\n");
         margo_destroy(handle);

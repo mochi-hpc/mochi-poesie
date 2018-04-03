@@ -44,7 +44,7 @@ int poesie_client_finalize(poesie_client_t client);
  *
  * @param client POESIE client
  * @param addr Mercury address of the POESIE provider
- * @param mplex_id Multiplex id of the POESIE provider
+ * @param provider_id id of the POESIE provider
  * @param handle Resulting provider handle
  *
  * @return POESIE_SUCCESS or other error code from poesie-common.h
@@ -52,7 +52,7 @@ int poesie_client_finalize(poesie_client_t client);
 int poesie_provider_handle_create(
         poesie_client_t client,
         hg_addr_t addr,
-        uint8_t mplex_id,
+        uint16_t provider_id,
         poesie_provider_handle_t* handle);
 
 /**
