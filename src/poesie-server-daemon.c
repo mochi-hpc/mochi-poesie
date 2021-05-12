@@ -4,6 +4,7 @@
  * See COPYRIGHT in top-level directory.
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
