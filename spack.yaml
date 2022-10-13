@@ -1,0 +1,9 @@
+spack:
+  specs:
+  - cmake
+  - mochi-margo
+  - mochi-bedrock
+  - lua-sol2
+  - py-pybind11
+  concretizer:
+    unify: true

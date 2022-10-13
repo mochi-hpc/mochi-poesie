@@ -1,11 +1,12 @@
 /*
  * (C) 2018 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #include <assert.h>
-#include "src/poesie-vm.h"
-#include "src/poesie-rpc-types.h"
+#include <stdlib.h>
+#include "poesie-vm.h"
+#include "poesie-rpc-types.h"
 #include "poesie-server.h"
 
 #if 0

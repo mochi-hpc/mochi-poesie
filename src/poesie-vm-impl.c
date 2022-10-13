@@ -1,17 +1,17 @@
 /*
  * (C) 2018 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #include <stdlib.h>
-#include "src/poesie-config.h"
-#include "src/poesie-vm.h"
-#include "src/poesie-vm-impl.h"
+#include "config.h"
+#include "poesie-vm.h"
+#include "poesie-vm-impl.h"
 #ifdef USE_PYTHON
-#include "src/lang/poesie-python.h"
+#include "lang/poesie-python.h"
 #endif
 #ifdef USE_LUA
-#include "src/lang/poesie-lua.h"
+#include "lang/poesie-lua.h"
 #endif
 
 int poesie_vm_execute(poesie_vm_t vm, const char* code, char** output)
