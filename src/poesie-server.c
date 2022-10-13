@@ -17,6 +17,7 @@
 
 struct poesie_provider
 {
+    margo_instance_id  mid;
     uint64_t           vm_arr_size;
     uint64_t           num_vms;
     poesie_vm_t*       vms;
@@ -53,10 +54,12 @@ int poesie_provider_register(
         }
     }
 
-    /* allocate the resulting structure */    
+    /* allocate the resulting structure */
     tmp_provider = (poesie_provider_t)calloc(1,sizeof(*tmp_provider));
     if(!tmp_provider)
         return POESIE_ERR_ALLOCATION;
+
+    tmp_provider->mid = mid;
 
     /* register RPCs */
     hg_id_t rpc_id;
@@ -96,7 +99,7 @@ int poesie_provider_add_vm(
     }
 
     poesie_vm_t vm;
-    ret = poesie_vm_create(vm_name, vm_lang, &vm);
+    ret = poesie_vm_create(vm_name, provider->mid, vm_lang, &vm);
 
     if(ret != 0) return ret;
 
@@ -318,7 +321,7 @@ static void poesie_execute_ult(hg_handle_t handle)
     poesie_vm_t vm = NULL;
     if(vm_id == POESIE_VM_ANONYMOUS) {
         poesie_vm_t vm;
-        ret = poesie_vm_create(NULL, in.lang, &vm);
+        ret = poesie_vm_create(NULL, provider->mid, in.lang, &vm);
         if(ret != POESIE_SUCCESS) {
             out.ret = ret;
             out.output = NULL;

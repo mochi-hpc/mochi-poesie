@@ -6,6 +6,7 @@
 #ifndef __POESIE_VM_H
 #define __POESIE_VM_H
 
+#include <margo.h>
 #include "poesie-common.h"
 
 #ifdef __cplusplus
@@ -14,7 +15,7 @@ extern "C" {
 
 typedef struct poesie_vm* poesie_vm_t;
 
-int poesie_vm_create(const char* name, poesie_lang_t lang, poesie_vm_t* vm);
+int poesie_vm_create(const char* name, margo_instance_id mid, poesie_lang_t lang, poesie_vm_t* vm);
 
 int poesie_vm_execute(poesie_vm_t vm, const char* code, char** output);
 

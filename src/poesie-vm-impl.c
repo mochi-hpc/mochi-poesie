@@ -23,19 +23,21 @@ int poesie_vm_execute(poesie_vm_t vm, const char* code, char** output)
     }
 }
 
-int poesie_vm_create(const char* name, poesie_lang_t lang, poesie_vm_t* vm)
+int poesie_vm_create(const char* name, margo_instance_id mid, poesie_lang_t lang, poesie_vm_t* vm)
 {
     poesie_vm_t tmp_vm = NULL;
     switch(lang) {
         case POESIE_LANG_PYTHON:
 #ifdef POESIE_HAS_PYTHON
             tmp_vm = calloc(1, sizeof(*tmp_vm));
+            tmp_vm->mid = mid;
             poesie_py_vm_init(tmp_vm, name);
 #endif
             break;
         case POESIE_LANG_LUA:
 #ifdef POESIE_HAS_LUA
             tmp_vm = calloc(1, sizeof(*tmp_vm));
+            tmp_vm->mid = mid;
             poesie_lua_vm_init(tmp_vm, name);
 #endif
             break;
