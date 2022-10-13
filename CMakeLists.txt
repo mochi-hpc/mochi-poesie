@@ -7,13 +7,10 @@ enable_testing ()
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
      "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-set (CMAKE_CXX_STANDARD 14)
-set (CMAKE_CXX_STANDARD_REQUIRED ON)
-
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra -Wall -Wpedantic")
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wextra -Wall -Wpedantic")
 
-add_library(coverage_config INTERFACE)
+add_library (coverage_config INTERFACE)
 
 option (ENABLE_COVERAGE   "Enable coverage reporting" OFF)
 option (ENABLE_BEDROCK    "Build bedrock module" OFF)
@@ -55,24 +52,24 @@ set (BUILD_SHARED_LIBS "ON" CACHE BOOL "Build a shared library")
 find_package (PkgConfig REQUIRED)
 
 if (${ENABLE_BEDROCK})
-    find_package(bedrock REQUIRED)
+    find_package (bedrock REQUIRED)
 endif ()
 
 # search for margo
 pkg_check_modules (margo REQUIRED IMPORTED_TARGET margo)
 
 if (ENABLE_LUA)
-    find_package (sol2 REQUIRED)
     find_package (Lua REQUIRED)
     set (POESIE_HAS_LUA ON)
-    set (CMAKE_CXX_STANDARD 17)
 else ()
     set (POESIE_HAS_LUA OFF)
 endif ()
 
 if (ENABLE_PYTHON)
-    find_package(Python3 COMPONENTS Development REQUIRED)
-    find_package(pybind11 REQUIRED)
+    find_package (Python3 COMPONENTS Interpreter Development REQUIRED)
+    set (POESIE_HAS_PYTHON ON)
+else ()
+    set (POESIE_HAS_PYTHON OFF)
 endif ()
 
 # library version set here (e.g. for shared libs).

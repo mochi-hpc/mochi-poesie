@@ -7,10 +7,10 @@
 #include "config.h"
 #include "poesie-vm.h"
 #include "poesie-vm-impl.h"
-#ifdef USE_PYTHON
+#ifdef POESIE_HAS_PYTHON
 #include "lang/poesie-python.h"
 #endif
-#ifdef USE_LUA
+#ifdef POESIE_HAS_LUA
 #include "lang/poesie-lua.h"
 #endif
 
@@ -28,13 +28,13 @@ int poesie_vm_create(const char* name, poesie_lang_t lang, poesie_vm_t* vm)
     poesie_vm_t tmp_vm = NULL;
     switch(lang) {
         case POESIE_LANG_PYTHON:
-#ifdef USE_PYTHON
+#ifdef POESIE_HAS_PYTHON
             tmp_vm = calloc(1, sizeof(*tmp_vm));
             poesie_py_vm_init(tmp_vm, name);
 #endif
             break;
         case POESIE_LANG_LUA:
-#ifdef USE_LUA
+#ifdef POESIE_HAS_LUA
             tmp_vm = calloc(1, sizeof(*tmp_vm));
             poesie_lua_vm_init(tmp_vm, name);
 #endif

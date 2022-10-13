@@ -1,6 +1,6 @@
 /*
  * (C) 2018 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #include <string.h>
@@ -11,8 +11,8 @@
 #include <lualib.h>
 #include <lauxlib.h>
 #include <margo.h>
-#include "src/lang/poesie-lua.h"
-#include "src/poesie-vm-impl.h"
+#include "poesie-lua.h"
+#include "../poesie-vm-impl.h"
 
 typedef struct lua_vm {
     lua_State *L;
@@ -22,7 +22,7 @@ typedef struct lua_vm {
 static int poesie_lua_execute(void* impl, const char* code, char** output);
 static int poesie_lua_finalize(void* impl);
 
-int poesie_lua_vm_init(poesie_vm_t vm, const char* name) 
+int poesie_lua_vm_init(poesie_vm_t vm, const char* name)
 {
     lua_vm_t lvm = (lua_vm_t)calloc(1,sizeof(*vm));
     if(!lvm) return POESIE_ERR_ALLOCATION;

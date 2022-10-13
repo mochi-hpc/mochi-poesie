@@ -3,7 +3,7 @@ spack:
   - cmake
   - mochi-margo
   - mochi-bedrock
-  - lua-sol2
-  - py-pybind11
+  - lua
+  - python
   concretizer:
     unify: true

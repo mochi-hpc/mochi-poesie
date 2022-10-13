@@ -6,7 +6,7 @@ set (server-src-files
 set (client-src-files
      poesie-client.c)
 
-set (DEPENDENCIES "")
+set (LANG_DEPENDENCIES "")
 
 if (ENABLE_LUA)
 #    list (APPEND server-src-files
@@ -16,8 +16,9 @@ if (ENABLE_LUA)
 endif (ENABLE_LUA)
 
 if (ENABLE_PYTHON)
-#     list (APPEND server-src-files
-#           lang/poesie-python.c
+     list (APPEND server-src-files
+           lang/poesie-python.c)
+   list (APPEND LANG_DEPENDENCIES Python3::Python) #pybind11::embed)
 endif (ENABLE_PYTHON)
 
 # load package helper for generating cmake CONFIG packages
@@ -33,7 +34,7 @@ set (poesie-vers "${POESIE_VERSION_MAJOR}.${POESIE_VERSION_MINOR}")
 add_library (poesie-server ${server-src-files} ${backend-src-files})
 target_link_libraries (poesie-server
     PUBLIC PkgConfig::margo
-    PRIVATE coverage_config)
+    PRIVATE coverage_config ${LANG_DEPENDENCIES})
 target_compile_definitions (poesie-server PRIVATE -DJSON_HAS_CPP_14)
 target_include_directories (poesie-server PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (poesie-server BEFORE PUBLIC
