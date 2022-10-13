@@ -95,10 +95,7 @@ int main(int argc, char *argv[])
     }
 
     /* executing something */
-    /* fortunately print("Hello World") is a valid statement
-       both in Lua and Python so this will work whatever the
-       backend language. */
-    const char* pycode = "print 'Hello World from Python'";
+    const char* pycode = "print(\"Hello World from Python\")";
     const char* luacode = "print(\"Hello World from Lua\"); return \"Bonjour\"";
 
     const char* code = (lang == POESIE_LANG_PYTHON) ? pycode : luacode;
