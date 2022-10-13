@@ -1,8 +1,9 @@
 /*
  * (C) 2018 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
+#include <stdlib.h>
 #include "poesie-client.h"
 #include "poesie-rpc-types.h"
 
@@ -73,7 +74,8 @@ int poesie_client_finalize(poesie_client_t client)
 {
     if(client->num_provider_handles != 0) {
         fprintf(stderr,
-                "[POESIE] Warning: %d provider handles not released before poesie_client_finalize was called\n",
+                "[POESIE] Warning: %lu provider handles not released "
+                "before poesie_client_finalize was called\n",
                 client->num_provider_handles);
     }
     free(client);
@@ -86,7 +88,7 @@ int poesie_provider_handle_create(
         uint16_t provider_id,
         poesie_provider_handle_t* handle)
 {
-    if(client == POESIE_CLIENT_NULL) 
+    if(client == POESIE_CLIENT_NULL)
         return POESIE_ERR_INVALID_ARG;
 
     poesie_provider_handle_t provider =
@@ -274,7 +276,7 @@ int poesie_delete_vm(
 }
 
 int poesie_execute(
-        poesie_provider_handle_t provider, 
+        poesie_provider_handle_t provider,
         poesie_vm_id_t vm_id,
         poesie_lang_t lang,
         const char* code,
@@ -324,11 +326,6 @@ int poesie_execute(
 
     margo_destroy(handle);
     return ret;
-}
-
-int poesie_shutdown_service(poesie_client_t client, hg_addr_t addr)
-{
-    return margo_shutdown_remote_instance(client->mid, addr);
 }
 
 int poesie_free_output(char* output)

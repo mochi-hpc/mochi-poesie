@@ -3,7 +3,7 @@
  * 
  * See COPYRIGHT in top-level directory.
  */
-#include <python2.7/Python.h>
+#include <Python.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -74,7 +74,7 @@ static int poesie_py_execute(void* impl, const char* code, char** output)
     // make ts the current thread state
     PyThreadState* oldts = PyThreadState_Swap(ts);
     // execute code
-    PyObject* result = PyRun_String(code, 
+    PyObject* result = PyRun_String(code,
             Py_file_input, pvm->globalDictionary, pvm->localDictionary);
     /* check if error occured */
     PyObject* ex = PyErr_Occurred();
@@ -84,7 +84,10 @@ static int poesie_py_execute(void* impl, const char* code, char** output)
         PyErr_Fetch( &pExcType , &pExcValue , &pExcTraceback );
         if(pExcValue != NULL) {
             PyObject* pRepr = PyObject_Repr(pExcValue);
-            *output = strdup(PyString_AsString(pRepr));
+            PyObject * pBytes = PyUnicode_AsEncodedString(result, "UTF-8", "strict");
+            *output = PyBytes_AS_STRING(pBytes);
+            *output = strdup(*output);
+            Py_DECREF(pBytes);
             Py_DECREF(pExcValue);
             Py_DECREF(pRepr);
         }

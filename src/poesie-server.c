@@ -114,7 +114,7 @@ int poesie_provider_remove_vm(
     if(provider == POESIE_PROVIDER_NULL)
         return POESIE_ERR_INVALID_ARG;
 
-    if(provider->vm_arr_size > vm_id || vm_id < 0)
+    if(vm_id < 0 || provider->vm_arr_size > (uint64_t)vm_id)
         return POESIE_ERR_INVALID_ARG;
 
     if(provider->vms[vm_id] == NULL)
@@ -122,7 +122,7 @@ int poesie_provider_remove_vm(
 
     poesie_vm_t vm = provider->vms[vm_id];
     remove_poesie_vm(provider, vm_id);
-    
+
     ret = poesie_vm_destroy(vm);
 
     return ret;
@@ -135,7 +135,7 @@ int poesie_provider_remove_all_vms(
         return POESIE_ERR_INVALID_ARG;
 
     poesie_vm_id_t id;
-    for(id = 0; id < provider->vm_arr_size; id++) {
+    for(id = 0; id < (poesie_vm_id_t)provider->vm_arr_size; id++) {
         remove_poesie_vm(provider, id);
     }
     return POESIE_SUCCESS;
@@ -157,7 +157,7 @@ int poesie_provider_list_vms(
 {
     poesie_vm_id_t id;
     unsigned i = 0;
-    for(id = 0; id < provider->vm_arr_size; id++) {
+    for(id = 0; id < (poesie_vm_id_t)provider->vm_arr_size; id++) {
         if(provider->vms[id]) {
             vms[i] = id;
             i += 1;
@@ -175,7 +175,7 @@ static void poesie_get_vm_info_ult(hg_handle_t handle)
     margo_instance_id mid = margo_hg_handle_get_instance(handle);
     assert(mid);
     const struct hg_info* info = margo_get_info(handle);
-    poesie_provider_t provider = 
+    poesie_provider_t provider =
         (poesie_provider_t)margo_registered_data(mid, info->id);
     if(!provider) {
         out.ret = POESIE_ERR_UNKNOWN_PR;
@@ -183,7 +183,7 @@ static void poesie_get_vm_info_ult(hg_handle_t handle)
         margo_destroy(handle);
         return;
     }
-    
+
     hret = margo_get_input(handle, &in);
     if(hret != HG_SUCCESS) {
         out.ret = POESIE_ERR_MERCURY;
@@ -214,16 +214,14 @@ static void poesie_create_vm_ult(hg_handle_t handle)
 {
 
     hg_return_t   hret;
-    int ret;
     create_vm_in_t  in;
     create_vm_out_t out;
     out.ret   = POESIE_SUCCESS;
     out.vm_id = POESIE_VM_ID_INVALID;
 
     margo_instance_id mid = margo_hg_handle_get_instance(handle);
-    assert(mid);
     const struct hg_info* info = margo_get_info(handle);
-    poesie_provider_t provider = 
+    poesie_provider_t provider =
         (poesie_provider_t)margo_registered_data(mid, info->id);
     if(!provider) {
         out.ret = POESIE_ERR_UNKNOWN_PR;
@@ -245,12 +243,9 @@ static void poesie_create_vm_ult(hg_handle_t handle)
     if(out.ret == POESIE_SUCCESS)
         out.vm_id = vm_id;
 
-finish:
     margo_respond(handle, &out);
     margo_free_input(handle, &in);
-    margo_destroy(handle); 
-
-    return;
+    margo_destroy(handle);
 }
 DEFINE_MARGO_RPC_HANDLER(poesie_create_vm_ult)
 
@@ -258,7 +253,6 @@ static void poesie_delete_vm_ult(hg_handle_t handle)
 {
 
     hg_return_t   hret;
-    int ret;
     delete_vm_in_t  in;
     delete_vm_out_t out;
     out.ret   = POESIE_SUCCESS;
@@ -266,7 +260,7 @@ static void poesie_delete_vm_ult(hg_handle_t handle)
     margo_instance_id mid = margo_hg_handle_get_instance(handle);
     assert(mid);
     const struct hg_info* info = margo_get_info(handle);
-    poesie_provider_t provider = 
+    poesie_provider_t provider =
         (poesie_provider_t)margo_registered_data(mid, info->id);
     if(!provider) {
         out.ret = POESIE_ERR_UNKNOWN_PR;
@@ -285,12 +279,9 @@ static void poesie_delete_vm_ult(hg_handle_t handle)
 
     out.ret = poesie_provider_remove_vm(provider, in.vm_id);
 
-finish:
     margo_respond(handle, &out);
     margo_free_input(handle, &in);
-    margo_destroy(handle); 
-
-    return;
+    margo_destroy(handle);
 }
 DEFINE_MARGO_RPC_HANDLER(poesie_delete_vm_ult)
 
@@ -306,7 +297,7 @@ static void poesie_execute_ult(hg_handle_t handle)
     margo_instance_id mid = margo_hg_handle_get_instance(handle);
     assert(mid);
     const struct hg_info* info = margo_get_info(handle);
-    poesie_provider_t provider = 
+    poesie_provider_t provider =
         (poesie_provider_t)margo_registered_data(mid, info->id);
     if(!provider) {
         out.ret = POESIE_ERR_UNKNOWN_PR;
@@ -354,9 +345,7 @@ finish:
     margo_respond(handle, &out);
     free(out.output);
     margo_free_input(handle, &in);
-    margo_destroy(handle); 
-
-    return;
+    margo_destroy(handle);
 }
 DEFINE_MARGO_RPC_HANDLER(poesie_execute_ult)
 
@@ -368,14 +357,12 @@ static void poesie_server_finalize_cb(void *data)
     poesie_provider_remove_all_vms(provider);
 
     free(provider);
-
-    return;
 }
 
 poesie_vm_id_t find_poesie_vm_id(poesie_provider_t provider, const char* name)
 {
     int64_t i;
-    for(i=0; i < provider->vm_arr_size; i++) {
+    for(i=0; i < (poesie_vm_id_t)provider->vm_arr_size; i++) {
         if(provider->vms[i] == NULL)
             continue;
         if(provider->vm_names[i] == NULL)
@@ -388,7 +375,7 @@ poesie_vm_id_t find_poesie_vm_id(poesie_provider_t provider, const char* name)
 }
 
 int remove_poesie_vm(poesie_provider_t provider, poesie_vm_id_t id) {
-    if(id < 0 || id >= provider->vm_arr_size) return -1;
+    if(id < 0 || id >= (poesie_vm_id_t)provider->vm_arr_size) return -1;
     if(provider->vms[id]) {
         provider->vms[id] = NULL;
         free(provider->vm_names[id]);
@@ -425,7 +412,7 @@ poesie_vm_id_t insert_poesie_vm(poesie_provider_t provider, const char* name, po
         return id;
     } else {
         poesie_vm_id_t id;
-        for(id = 0; id < provider->vm_arr_size; id++) {
+        for(id = 0; id < (poesie_vm_id_t)provider->vm_arr_size; id++) {
             if(provider->vms[id] == NULL) {
                 provider->vms[id]      = vm;
                 provider->vm_names[id] = strdup(name);
