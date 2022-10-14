@@ -1,6 +1,6 @@
 /*
  * (C) 2018 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 
@@ -21,12 +21,19 @@ extern "C" {
 
 typedef struct poesie_provider* poesie_provider_t;
 
+struct poesie_provider_args {
+    const char* config;
+    ABT_pool    pool;
+};
+
+#define POESIE_PROVIDER_ARGS_DEFAULT { NULL, ABT_POOL_NULL }
+
 /**
  * @brief Creates a new provider.
  *
  * @param[in] mid Margo instance
  * @param[in] mplex_id multiplex id
- * @param[in] pool Argobots pool
+ * @param[in] args Extra arguments
  * @param[out] provider provider handle
  *
  * @return POESIE_SUCCESS or error code defined in poesie-common.h
@@ -34,8 +41,18 @@ typedef struct poesie_provider* poesie_provider_t;
 int poesie_provider_register(
         margo_instance_id mid,
         uint16_t provider_id,
-        ABT_pool pool,
+        const struct poesie_provider_args* args,
         poesie_provider_t* provider);
+
+/**
+ * @brief Deregisters and destroy the provider.
+ *
+ * @param[in] provider Providet to deregister
+ *
+ * @return POESIE_SUCCESS or error code defined in poesie-common.h
+ */
+int poesie_provider_destroy(
+        poesie_provider_t provider);
 
 /**
  * Makes the provider start managing a vm.
@@ -54,7 +71,7 @@ int poesie_provider_add_vm(
         poesie_vm_id_t* vm_id);
 
 /**
- * Makes the provider stop managing a vm and deletes the vm. 
+ * Makes the provider stop managing a vm and deletes the vm.
  *
  * @param provider provider
  * @param vm_id id of the vm to remove

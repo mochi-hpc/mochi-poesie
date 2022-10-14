@@ -6,6 +6,9 @@ set (server-src-files
 set (client-src-files
      poesie-client.c)
 
+set (bedrock-module-src-files
+     poesie-bedrock.c)
+
 set (LANG_DEPENDENCIES "")
 
 if (ENABLE_LUA)

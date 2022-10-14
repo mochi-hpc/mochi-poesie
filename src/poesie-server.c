@@ -17,6 +17,11 @@ struct poesie_provider
     uint64_t           num_vms;
     poesie_vm_t*       vms;
     char**             vm_names;
+
+    hg_id_t get_vm_info_id;
+    hg_id_t execute_id;
+    hg_id_t create_vm_id;
+    hg_id_t delete_vm_id;
 };
 
 DECLARE_MARGO_RPC_HANDLER(poesie_get_vm_info_ult)
@@ -33,10 +38,16 @@ static void poesie_server_finalize_cb(void *data);
 int poesie_provider_register(
         margo_instance_id mid,
         uint16_t provider_id,
-        ABT_pool abt_pool,
+        const struct poesie_provider_args* args,
         poesie_provider_t* provider)
 {
     poesie_provider_t tmp_provider;
+
+    struct poesie_provider_args aargs = POESIE_PROVIDER_ARGS_DEFAULT;
+    if(args) {
+        memcpy(&aargs, args, sizeof(aargs));
+    }
+    ABT_pool abt_pool = aargs.pool;
 
     /* check if a provider with the same multiplex id already exists */
     {
@@ -62,13 +73,29 @@ int poesie_provider_register(
             get_vm_info_in_t, get_vm_info_out_t,
             poesie_get_vm_info_ult, provider_id, abt_pool);
     margo_register_data(mid, rpc_id, (void*)tmp_provider, NULL);
+    tmp_provider->get_vm_info_id = rpc_id;
+
     rpc_id = MARGO_REGISTER_PROVIDER(mid, "poesie_execute_rpc",
             execute_in_t, execute_out_t,
             poesie_execute_ult, provider_id, abt_pool);
     margo_register_data(mid, rpc_id, (void*)tmp_provider, NULL);
+    tmp_provider->execute_id = rpc_id;
+
+    rpc_id = MARGO_REGISTER_PROVIDER(mid, "poesie_create_vm_rpc",
+            create_vm_in_t, create_vm_out_t,
+            poesie_create_vm_ult, provider_id, abt_pool);
+    margo_register_data(mid, rpc_id, (void*)tmp_provider, NULL);
+    tmp_provider->create_vm_id = rpc_id;
+
+    rpc_id = MARGO_REGISTER_PROVIDER(mid, "poesie_delete_vm_rpc",
+            delete_vm_in_t, delete_vm_out_t,
+            poesie_delete_vm_ult, provider_id, abt_pool);
+    margo_register_data(mid, rpc_id, (void*)tmp_provider, NULL);
+    tmp_provider->delete_vm_id = rpc_id;
 
     /* install the bake server finalize callback */
-    margo_push_finalize_callback(mid, &poesie_server_finalize_cb, tmp_provider);
+    margo_provider_push_finalize_callback(mid, tmp_provider,
+        &poesie_server_finalize_cb, tmp_provider);
 
     if(provider != POESIE_PROVIDER_IGNORE)
         *provider = tmp_provider;
