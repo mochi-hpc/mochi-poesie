@@ -12,8 +12,6 @@
 #include "poesie-python.h"
 #include "../poesie-vm-impl.h"
 
-#define DEBUG(...) fprintf(stderr, __VA_ARGS__)
-
 static atomic_int num_open_vms = 0;
 
 typedef struct python_vm {

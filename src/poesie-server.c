@@ -5,15 +5,10 @@
  */
 #include <assert.h>
 #include <stdlib.h>
+#include <margo-logging.h>
 #include "poesie-vm.h"
 #include "poesie-rpc-types.h"
 #include "poesie-server.h"
-
-#if 0
-#define DEBUG(...) fprintf(stderr, __VA_ARGS__)
-#else
-#define DEBUG(...)
-#endif
 
 struct poesie_provider
 {
@@ -49,7 +44,7 @@ int poesie_provider_register(
         hg_bool_t flag;
         margo_provider_registered_name(mid, "poesie_get_vm_info_rpc", provider_id, &id, &flag);
         if(flag == HG_TRUE) {
-            fprintf(stderr, "[POESIE] a provider with the same id (%d) already exists\n", provider_id);
+            margo_error(mid, "[poesie] a provider with the same id (%d) already exists", provider_id);
             return POESIE_ERR_MERCURY;
         }
     }
