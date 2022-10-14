@@ -28,7 +28,7 @@ static int poesie_py_finalize(void* impl);
 static int init_python();
 static int finalize_python();
 
-int poesie_py_vm_init(poesie_vm_t vm, const char* name)
+int poesie_py_vm_init(poesie_vm_t vm, margo_instance_id mid, const char* name)
 {
     int ret;
     atomic_fetch_add(&num_open_vms, 1);
@@ -59,6 +59,10 @@ int poesie_py_vm_init(poesie_vm_t vm, const char* name)
         PyDict_SetItemString(pvm->localDictionary, "__name__", namePyObj);
         Py_DECREF(namePyObj);
     }
+
+    PyObject* pyMid = PyCapsule_New((void*)mid, "margo_instance_id", NULL);
+    PyDict_SetItemString(pvm->localDictionary, "__mid__", pyMid);
+    Py_DECREF(pyMid);
 
     vm->lang = POESIE_LANG_PYTHON;
     vm->impl = (void*)pvm;

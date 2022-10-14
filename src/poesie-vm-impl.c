@@ -31,14 +31,14 @@ int poesie_vm_create(const char* name, margo_instance_id mid, poesie_lang_t lang
 #ifdef POESIE_HAS_PYTHON
             tmp_vm = calloc(1, sizeof(*tmp_vm));
             tmp_vm->mid = mid;
-            poesie_py_vm_init(tmp_vm, name);
+            poesie_py_vm_init(tmp_vm, mid, name);
 #endif
             break;
         case POESIE_LANG_LUA:
 #ifdef POESIE_HAS_LUA
             tmp_vm = calloc(1, sizeof(*tmp_vm));
             tmp_vm->mid = mid;
-            poesie_lua_vm_init(tmp_vm, name);
+            poesie_lua_vm_init(tmp_vm, mid, name);
 #endif
             break;
         default:

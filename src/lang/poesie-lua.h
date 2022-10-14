@@ -6,8 +6,9 @@
 #ifndef __POESIE_LUA_H
 #define __POESIE_LUA_H
 
+#include <margo.h>
 #include "../poesie-vm.h"
 
-int poesie_lua_vm_init(poesie_vm_t vm, const char* vm_name);
+int poesie_lua_vm_init(poesie_vm_t vm, margo_instance_id mid, const char* vm_name);
 
 #endif
