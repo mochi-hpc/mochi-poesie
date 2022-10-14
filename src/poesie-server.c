@@ -455,6 +455,7 @@ static void poesie_execute_ult(hg_handle_t handle)
             poesie_vm_destroy(vm);
             goto finish;
         }
+        out.ret = ret;
     } else {
         vm = provider->vms[vm_id];
         if(!vm) {
@@ -576,7 +577,7 @@ static int validate_config(margo_instance_id mid, struct json_object* config)
             return -1;
         }
         const char* lang = json_object_get_string(vm_lang);
-        if(strcmp(lang, "lua") != 0 && strcmp(lang, "python") == 0) {
+        if(strcmp(lang, "lua") != 0 && strcmp(lang, "python") != 0) {
             margo_error(mid,
                 "[poesie] Invalid language \"%s\" for VM \"%s\"",
                 lang, vm_name);

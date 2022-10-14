@@ -12,15 +12,15 @@ set (bedrock-module-src-files
 set (LANG_DEPENDENCIES "")
 
 if (ENABLE_LUA)
-    list (APPEND server-src-files
-          lang/poesie-lua.c)
-    list (APPEND DEPENDENCIES ${LUA_LIBRARIES})
-    include_directories (${LUA_INCLUDE_DIR})
+  list (APPEND server-src-files
+        lang/poesie-lua.c)
+  list (APPEND LANG_DEPENDENCIES ${LUA_LIBRARIES})
+  include_directories (${LUA_INCLUDE_DIR})
 endif (ENABLE_LUA)
 
 if (ENABLE_PYTHON)
-     list (APPEND server-src-files
-           lang/poesie-python.c)
+   list (APPEND server-src-files
+         lang/poesie-python.c)
    list (APPEND LANG_DEPENDENCIES Python3::Python) #pybind11::embed)
 endif (ENABLE_PYTHON)
 

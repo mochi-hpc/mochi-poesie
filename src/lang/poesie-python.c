@@ -89,7 +89,7 @@ static int poesie_py_execute(void* impl, const char* code, char** output)
         PyErr_Fetch( &pExcType , &pExcValue , &pExcTraceback );
         if(pExcValue != NULL) {
             PyObject* pRepr = PyObject_Repr(pExcValue);
-            PyObject * pBytes = PyUnicode_AsEncodedString(result, "UTF-8", "strict");
+            PyObject* pBytes = PyUnicode_AsEncodedString(pRepr, "UTF-8", "strict");
             *output = PyBytes_AS_STRING(pBytes);
             *output = strdup(*output);
             Py_DECREF(pBytes);
@@ -105,7 +105,7 @@ static int poesie_py_execute(void* impl, const char* code, char** output)
         PyErr_Clear();
     } else {
         PyObject* resultStr = PyObject_Repr(result);
-        PyObject * pBytes = PyUnicode_AsEncodedString(result, "UTF-8", "strict");
+        PyObject* pBytes = PyUnicode_AsEncodedString(resultStr, "UTF-8", "strict");
         *output = PyBytes_AS_STRING(pBytes);
         *output = strdup(*output);
         Py_DECREF(pBytes);
