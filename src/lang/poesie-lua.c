@@ -41,6 +41,9 @@ int poesie_lua_vm_init(poesie_vm_t vm, const char* name)
     }
     luaL_openlibs(lvm->L);
 
+    lua_pushstring(lvm->L, name ? name : "<anonymous>");
+    lua_setglobal(lvm->L, "__name__");
+
     vm->lang = POESIE_LANG_LUA;
     vm->impl = (void*)lvm;
     vm->execute  = &poesie_lua_execute;
@@ -51,13 +54,15 @@ int poesie_lua_vm_init(poesie_vm_t vm, const char* name)
 
 static int poesie_lua_execute(void* impl, const char* code, char** output)
 {
+    *output = NULL;
     lua_vm_t lvm = (lua_vm_t)impl;
     if(!lvm) return POESIE_ERR_INVALID_ARG;
     if(ABT_SUCCESS != ABT_mutex_lock(lvm->mutex))
         return POESIE_ERR_ARGOBOTS;
     luaL_dostring(lvm->L, code);
     const char* str = lua_tostring(lvm->L, -1);
-    *output = strdup(str);
+    if(str)
+        *output = strdup(str);
     lua_pop(lvm->L, 1);
     ABT_mutex_unlock(lvm->mutex);
     return 0;

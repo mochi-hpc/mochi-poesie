@@ -583,6 +583,16 @@ static int validate_config(margo_instance_id mid, struct json_object* config)
                 lang, vm_name);
             return -1;
         }
+        // check if the vm_config has a preamble string entry
+        struct json_object* preamble = json_object_object_get(vm_config, "preamble");
+        if(preamble) {
+            if(!json_object_is_type(preamble, json_type_string)) {
+                margo_error(mid,
+                    "[poesie] Invalid preamble type for VM \"%s\" (string expected)",
+                    vm_name);
+                return -1;
+            }
+        }
     }
     return 0;
 }
@@ -593,6 +603,7 @@ static int create_vms_from_config(poesie_provider_t provider, struct json_object
     struct json_object* vms = json_object_object_get(config, "vms");
     if(!vms) return 0;
     json_object_object_foreach(vms, vm_name, vm_config) {
+        // check language
         const char* vm_lang = json_object_get_string(
             json_object_object_get(vm_config, "language"));
         poesie_lang_t lang = POESIE_LANG_DEFAULT;
@@ -600,6 +611,19 @@ static int create_vms_from_config(poesie_provider_t provider, struct json_object
         if(strcmp(vm_lang, "lua") == 0) lang = POESIE_LANG_LUA;
         poesie_vm_id_t vm_id;
         poesie_provider_add_vm(provider, vm_name, lang, &vm_id);
+        // check preamble
+        struct json_object* json_preamble = json_object_object_get(vm_config, "preamble");
+        if(json_preamble) {
+            const char* preamble = json_object_get_string(json_preamble);
+            char* output = NULL;
+            int ret = poesie_vm_execute(provider->vms[vm_id], preamble, &output);
+            if(ret != POESIE_SUCCESS) {
+                margo_warning(provider->mid,
+                    "[poesie] Error while executing preamble for VM %s: %s",
+                    vm_name, output ? output : "(not output)");
+            }
+            free(output);
+        }
     }
     return 0;
 }

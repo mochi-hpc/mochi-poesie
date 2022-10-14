@@ -30,7 +30,6 @@ static int finalize_python();
 
 int poesie_py_vm_init(poesie_vm_t vm, const char* name)
 {
-    (void)name; // XXX
     int ret;
     atomic_fetch_add(&num_open_vms, 1);
     ret = init_python();
@@ -54,6 +53,12 @@ int poesie_py_vm_init(poesie_vm_t vm, const char* name)
     pvm->main             = PyImport_AddModule("__main__");
     pvm->globalDictionary = PyModule_GetDict(pvm->main);
     pvm->localDictionary  = PyDict_New();
+
+    if(name) {
+        PyObject* namePyObj = PyUnicode_FromString(name);
+        PyDict_SetItemString(pvm->localDictionary, "__name__", namePyObj);
+        Py_DECREF(namePyObj);
+    }
 
     vm->lang = POESIE_LANG_PYTHON;
     vm->impl = (void*)pvm;
@@ -140,11 +145,9 @@ static int poesie_py_finalize(void* impl)
 {
     if(!impl) return 0;
     python_vm_t pvm = (python_vm_t)impl;
-#if 0
     Py_DECREF(pvm->localDictionary);
     Py_DECREF(pvm->globalDictionary);
     Py_DECREF(pvm->main);
-#endif
     ABT_mutex_free(&pvm->mutex);
     free(pvm);
     if(atomic_fetch_sub(&num_open_vms, 1) == 1) {

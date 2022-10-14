@@ -10,10 +10,12 @@
             "config": {
                 "vms": {
                     "my_python_vm": {
-                        "language": "python"
+                        "language": "python",
+                        "preamble": "print(\"This is the preamble\")"
                     },
                     "my_lua_vm": {
-                        "language": "lua"
+                        "language": "lua",
+                        "preamble": "print(\"This is the preamble\")"
                     }
                 }
             }
