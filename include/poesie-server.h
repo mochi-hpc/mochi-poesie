@@ -123,4 +123,4 @@ int poesie_provider_list_vms(
 }
 #endif
 
-#endif /* __BAKE_SERVER_H */
+#endif /* __POESIE_SERVER_H */

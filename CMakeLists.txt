@@ -57,6 +57,7 @@ endif ()
 
 # search for margo
 pkg_check_modules (margo REQUIRED IMPORTED_TARGET margo)
+pkg_check_modules (json-c REQUIRED IMPORTED_TARGET json-c)
 
 if (ENABLE_LUA)
     find_package (Lua REQUIRED)
@@ -80,3 +81,4 @@ set (POESIE_VERSION
   "${POESIE_VERSION_MAJOR}.${POESIE_VERSION_MINOR}.${POESIE_VERSION_PATCH}")
 
 add_subdirectory (src)
+add_subdirectory (test)
