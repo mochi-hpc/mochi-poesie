@@ -68,10 +68,11 @@ int poesie_py_vm_init(poesie_vm_t vm, const char* name)
 
 static int poesie_py_execute(void* impl, const char* code, char** output)
 {
+    *output = NULL;
+    PyObject *pExcType , *pExcValue , *pExcTraceback;
     python_vm_t pvm = (python_vm_t)impl;
     ABT_mutex_lock(pvm->mutex);
     PyThreadState* _state = PyEval_SaveThread();
-    // acquire the GIL
     // Acquire the GIL
     PyGILState_STATE gstate = PyGILState_Ensure();
     // create a new thread state for the the sub interpreter interp
@@ -79,39 +80,30 @@ static int poesie_py_execute(void* impl, const char* code, char** output)
     // make ts the current thread state
     PyThreadState* oldts = PyThreadState_Swap(ts);
     // execute code
-    PyObject* result = PyRun_String(code,
-            Py_file_input, pvm->globalDictionary, pvm->localDictionary);
-    /* check if error occured */
-    PyObject* ex = PyErr_Occurred();
-    if (ex) { /* error did occure */
-        /* fetch the error */
-        PyObject *pExcType , *pExcValue , *pExcTraceback;
-        PyErr_Fetch( &pExcType , &pExcValue , &pExcTraceback );
-        if(pExcValue != NULL) {
-            PyObject* pRepr = PyObject_Repr(pExcValue);
-            PyObject* pBytes = PyUnicode_AsEncodedString(pRepr, "UTF-8", "strict");
-            *output = PyBytes_AS_STRING(pBytes);
-            *output = strdup(*output);
-            Py_DECREF(pBytes);
-            Py_DECREF(pExcValue);
-            Py_DECREF(pRepr);
-        }
-        if(pExcType != NULL)
-            Py_DECREF(pExcType);
-        if(pExcTraceback != NULL)
-            Py_DECREF(pExcTraceback);
+    PyObject* ex = NULL;
+    PyRun_String("__poesie_output__ = None", Py_file_input,
+                 pvm->globalDictionary, pvm->localDictionary);
+    ex = PyErr_Occurred();
+    if(ex) goto pyerror;
+    PyRun_String(code, Py_file_input,
+                 pvm->globalDictionary, pvm->localDictionary);
+    ex = PyErr_Occurred();
+    if(ex) goto pyerror;
+    PyObject* pyOutput = PyRun_String(
+        "__poesie_output__", Py_eval_input,
+        pvm->globalDictionary, pvm->localDictionary);
+    ex = PyErr_Occurred();
+    if(ex) goto pyerror;
 
-        Py_DECREF(ex);
-        PyErr_Clear();
-    } else {
-        PyObject* resultStr = PyObject_Repr(result);
-        PyObject* pBytes = PyUnicode_AsEncodedString(resultStr, "UTF-8", "strict");
-        *output = PyBytes_AS_STRING(pBytes);
-        *output = strdup(*output);
-        Py_DECREF(pBytes);
-        Py_DECREF(result);
-        Py_DECREF(resultStr);
-    }
+    PyObject* resultStr = PyObject_Str(pyOutput);
+    PyObject* pBytes = PyUnicode_AsEncodedString(resultStr, "UTF-8", "strict");
+    *output = PyBytes_AS_STRING(pBytes);
+    *output = strdup(*output);
+    Py_DECREF(pBytes);
+    Py_DECREF(pyOutput);
+    Py_DECREF(resultStr);
+
+finish:
     // release ts
     PyThreadState_Swap(oldts);
     // clear and delete ts
@@ -123,6 +115,25 @@ static int poesie_py_execute(void* impl, const char* code, char** output)
     PyEval_RestoreThread(_state);
     ABT_mutex_unlock(pvm->mutex);
     return 0;
+
+pyerror:
+    PyErr_Fetch( &pExcType , &pExcValue , &pExcTraceback );
+    if(pExcValue != NULL) {
+        PyObject* pRepr = PyObject_Str(pExcValue);
+        PyObject* pBytes = PyUnicode_AsEncodedString(pRepr, "UTF-8", "strict");
+        *output = PyBytes_AS_STRING(pBytes);
+        *output = strdup(*output);
+        Py_DECREF(pBytes);
+        Py_DECREF(pExcValue);
+        Py_DECREF(pRepr);
+    }
+    if(pExcType != NULL)
+        Py_DECREF(pExcType);
+    if(pExcTraceback != NULL)
+        Py_DECREF(pExcTraceback);
+    Py_DECREF(ex);
+    PyErr_Clear();
+    goto finish;
 }
 
 static int poesie_py_finalize(void* impl)

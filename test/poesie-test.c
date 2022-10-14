@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
     }
 
     /* executing something */
-    const char* pycode = "print(\"Hello World from Python\")";
+    const char* pycode = "print(\"Hello World from Python\"); __poesie_output__ = \"Bonjour\"";
     const char* luacode = "print(\"Hello World from Lua\"); return \"Bonjour\"";
 
     const char* code = (lang == POESIE_LANG_PYTHON) ? pycode : luacode;
