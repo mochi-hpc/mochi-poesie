@@ -88,16 +88,17 @@ static int poesie_py_execute(void* impl, const char* code, char** output)
     PyThreadState* ts = PyThreadState_New(pvm->subint->interp);
     // make ts the current thread state
     PyThreadState* oldts = PyThreadState_Swap(ts);
-    // execute code
+    // reset __poesie_output__
     PyObject* ex = NULL;
-    PyRun_String("__poesie_output__ = None", Py_file_input,
-                 pvm->globalDictionary, pvm->localDictionary);
+    PyDict_SetItemString(pvm->globalDictionary, "__poesie_output__", Py_None);
+    // execute user code
     ex = PyErr_Occurred();
     if(ex) goto pyerror;
     PyRun_String(code, Py_file_input,
                  pvm->globalDictionary, pvm->localDictionary);
     ex = PyErr_Occurred();
     if(ex) goto pyerror;
+    // get __poesie_output__
     PyObject* pyOutput = PyRun_String(
         "__poesie_output__", Py_eval_input,
         pvm->globalDictionary, pvm->localDictionary);
