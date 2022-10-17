@@ -15,7 +15,9 @@
 static atomic_int num_open_vms = 0;
 
 typedef struct python_vm {
+#ifdef ALLOW_SUBINT
     PyThreadState* subint;
+#endif
     PyObject* main;
     PyObject* globalDictionary;
     PyObject* localDictionary;
@@ -31,10 +33,12 @@ static int finalize_python();
 int poesie_py_vm_init(poesie_vm_t vm, margo_instance_id mid, const char* name)
 {
     int ret;
+#ifndef ALLOW_SUBINT
     if(atomic_load(&num_open_vms) == 1) {
         margo_error(mid, "[poesie] Multiple Python VMs not yet supported");
         return POESIE_ERR_VM_INIT;
     }
+#endif
     atomic_fetch_add(&num_open_vms, 1);
     ret = init_python();
     if(ret != 0)
@@ -49,10 +53,20 @@ int poesie_py_vm_init(poesie_vm_t vm, margo_instance_id mid, const char* name)
         return POESIE_ERR_ARGOBOTS;
     }
 
-    /* save current thread state */
-//    PyThreadState* old_ts = PyThreadState_Get();
+#ifdef ALLOW_SUBINT
+    PyThreadState* main_state = PyThreadState_Get();
     /* create sub-interpreter */
-//    pvm->subint = Py_NewInterpreter();
+    pvm->subint = Py_NewInterpreter();
+    PyThreadState_Swap(main_state);
+#endif
+    /* acquire lock */
+    PyGILState_STATE gstate = PyGILState_Ensure();
+#ifdef ALLOW_SUBINT
+    /* create new thread state */
+    PyThreadState* new_ts = PyThreadState_New(pvm->subint->interp);
+    /* swap to new thread state */
+    PyThreadState* old_ts = PyThreadState_Swap(new_ts);
+#endif
     /* initialize the context */
     pvm->main             = PyImport_AddModule("__main__");
     pvm->globalDictionary = PyModule_GetDict(pvm->main);
@@ -68,13 +82,20 @@ int poesie_py_vm_init(poesie_vm_t vm, margo_instance_id mid, const char* name)
     PyDict_SetItemString(pvm->localDictionary, "__mid__", pyMid);
     Py_DECREF(pyMid);
 
+#ifdef ALLOW_SUBINT
+    /* swap to back to old thread state */
+    PyThreadState_Swap(old_ts);
+    /* cleanup new thread state */
+    PyThreadState_Clear(new_ts);
+    PyThreadState_Delete(new_ts);
+#endif
+    /* release lock */
+    PyGILState_Release(gstate);
+
     vm->lang = POESIE_LANG_PYTHON;
     vm->impl = (void*)pvm;
     vm->execute  = &poesie_py_execute;
     vm->finalize = &poesie_py_finalize;
-
-    /* swap back to main interpreter */
-//    PyThreadState_Swap(old_ts);
 
     return 0;
 }
@@ -85,13 +106,14 @@ static int poesie_py_execute(void* impl, const char* code, char** output)
     PyObject *pExcType , *pExcValue , *pExcTraceback;
     python_vm_t pvm = (python_vm_t)impl;
     ABT_mutex_lock(pvm->mutex);
-//    PyThreadState* _state = PyEval_SaveThread();
-    // Acquire the GIL
+    /* acquire lock */
     PyGILState_STATE gstate = PyGILState_Ensure();
-    // create a new thread state for the sub interpreter interp
-//    PyThreadState* ts = PyThreadState_New(pvm->subint->interp);
-    // make ts the current thread state
-//    PyThreadState* oldts = PyThreadState_Swap(ts);
+#ifdef ALLOW_SUBINT
+    /* create new thread state */
+    PyThreadState* new_ts = PyThreadState_New(pvm->subint->interp);
+    /* swap to new thread state */
+    PyThreadState* old_ts = PyThreadState_Swap(new_ts);
+#endif
     // reset __poesie_output__
     PyObject* ex = NULL;
     PyDict_SetItemString(pvm->globalDictionary, "__poesie_output__", Py_None);
@@ -118,20 +140,19 @@ static int poesie_py_execute(void* impl, const char* code, char** output)
     Py_DECREF(resultStr);
 
 finish:
-    // release ts
-//    PyThreadState_Swap(oldts);
-    // clear and delete ts
-//    PyThreadState_Clear(ts);
-//    PyThreadState_Delete(ts);
-
-    // release the GIL
+#ifdef ALLOW_SUBINT
+    /* swap to back to old thread state */
+    PyThreadState_Swap(old_ts);
+    /* cleanup new thread state */
+    PyThreadState_Clear(new_ts);
+    PyThreadState_Delete(new_ts);
+#endif
+    /* release lock */
     PyGILState_Release(gstate);
-//    PyEval_RestoreThread(_state);
     ABT_mutex_unlock(pvm->mutex);
     return 0;
 
 pyerror:
-    fprintf(stderr, "FFF\n");
     PyErr_Fetch( &pExcType , &pExcValue , &pExcTraceback );
     if(pExcValue != NULL) {
         PyObject* pRepr = PyObject_Str(pExcValue);
@@ -155,9 +176,34 @@ static int poesie_py_finalize(void* impl)
 {
     if(!impl) return 0;
     python_vm_t pvm = (python_vm_t)impl;
+    /* acquire lock */
+    PyGILState_STATE gstate = PyGILState_Ensure();
+#ifdef ALLOW_SUBINT
+    /* create new thread state */
+    PyThreadState* new_ts = PyThreadState_New(pvm->subint->interp);
+    /* swap to new thread state */
+    PyThreadState* old_ts = PyThreadState_Swap(new_ts);
+#endif
+    /* decrement references */
     Py_DECREF(pvm->localDictionary);
     Py_DECREF(pvm->globalDictionary);
     Py_DECREF(pvm->main);
+#ifdef ALLOW_SUBINT
+    /* swap to back to old thread state */
+    PyThreadState_Swap(old_ts);
+    /* cleanup new thread state */
+    PyThreadState_Clear(new_ts);
+    PyThreadState_Delete(new_ts);
+#endif
+    /* release lock */
+    PyGILState_Release(gstate);
+#ifdef ALLOW_SUBINT
+    /* swap to thread state of subint */
+    old_ts = PyThreadState_Swap(pvm->subint);
+    /* end subinterpreter */
+    Py_EndInterpreter(pvm->subint);
+    PyThreadState_Swap(old_ts);
+#endif
     ABT_mutex_free(&pvm->mutex);
     free(pvm);
     if(atomic_fetch_sub(&num_open_vms, 1) == 1) {
