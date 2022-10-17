@@ -1,6 +1,6 @@
 /*
  * (C) 2018 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #ifndef __POESIE_CLIENT_H
@@ -87,7 +87,7 @@ int poesie_provider_handle_release(poesie_provider_handle_t handle);
  * @return POESIE_SUCCESS or other error code from poesie-common.h
  */
 int poesie_get_vm_info(
-        poesie_provider_handle_t handle, 
+        poesie_provider_handle_t handle,
         const char* vm_name,
         poesie_vm_id_t* vm_id,
         poesie_lang_t* language);
@@ -127,7 +127,7 @@ int poesie_delete_vm(
  * the code. The language of this VM shoud be different
  * from POESIE_LANG_DEFAULT. If the target VM is an existing
  * VM, POESIE_LANG_DEFAULT can be used to say "whatever
- * language this VM is using". Upon success, this function 
+ * language this VM is using". Upon success, this function
  * will allocate the output pointer. This pointer should be
  * freed using poesie_free_output.
  *
@@ -154,16 +154,6 @@ int poesie_execute(
  * @return POESIE_SUCCESS or other error code from poesie-common.h
  */
 int poesie_free_output(char* output);
-
-/**
- * @brief Request the Margo instance at the target address to shut down.
- *
- * @param client POESIE client
- * @param addr Mercury address of the Margo instance to shutdown
- *
- * @return POESIE_SUCCESS or other error code from poesie-common.h
- */
-int poesie_shutdown_service(poesie_client_t client, hg_addr_t addr);
 
 #if defined(__cplusplus)
 }

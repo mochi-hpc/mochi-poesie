@@ -1,0 +1,12 @@
+/*
+ * (C) 2021 The University of Chicago
+ *
+ * See COPYRIGHT in top-level directory.
+ */
+#ifndef _CONFIG_H
+#define _CONFIG_H
+
+#cmakedefine POESIE_HAS_LUA
+#cmakedefine POESIE_HAS_PYTHON
+
+#endif

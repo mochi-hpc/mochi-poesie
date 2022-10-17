@@ -1,0 +1,24 @@
+{
+    "libraries": {
+        "poesie": "src/libpoesie-bedrock-module.so"
+    },
+    "providers": [
+        {
+            "name": "poesie_provider",
+            "type": "poesie",
+            "provider_id": 0,
+            "config": {
+                "vms": {
+                    "my_python_vm": {
+                        "language": "python",
+                        "preamble": "print(\"This is the preamble\")"
+                    },
+                    "my_lua_vm": {
+                        "language": "lua",
+                        "preamble": "print(\"This is the preamble\")"
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -1,18 +1,18 @@
 /*
  * (C) 2018 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
 #include <margo.h>
-#include "src/lang/poesie-lua.h"
-#include "src/poesie-vm-impl.h"
+#include "poesie-lua.h"
+#include "../poesie-vm-impl.h"
 
 typedef struct lua_vm {
     lua_State *L;
@@ -21,8 +21,9 @@ typedef struct lua_vm {
 
 static int poesie_lua_execute(void* impl, const char* code, char** output);
 static int poesie_lua_finalize(void* impl);
+static struct json_object* poesie_lua_get_config(void* impl);
 
-int poesie_lua_vm_init(poesie_vm_t vm, const char* name) 
+int poesie_lua_vm_init(poesie_vm_t vm, margo_instance_id mid, const char* name)
 {
     lua_vm_t lvm = (lua_vm_t)calloc(1,sizeof(*vm));
     if(!lvm) return POESIE_ERR_ALLOCATION;
@@ -41,23 +42,32 @@ int poesie_lua_vm_init(poesie_vm_t vm, const char* name)
     }
     luaL_openlibs(lvm->L);
 
+    lua_pushstring(lvm->L, name ? name : "<anonymous>");
+    lua_setglobal(lvm->L, "__name__");
+
+    lua_pushlightuserdata(lvm->L, mid);
+    lua_setglobal(lvm->L, "__mid__");
+
     vm->lang = POESIE_LANG_LUA;
     vm->impl = (void*)lvm;
-    vm->execute  = &poesie_lua_execute;
-    vm->finalize = &poesie_lua_finalize;
+    vm->execute    = &poesie_lua_execute;
+    vm->finalize   = &poesie_lua_finalize;
+    vm->get_config = &poesie_lua_get_config;
 
     return 0;
 }
 
 static int poesie_lua_execute(void* impl, const char* code, char** output)
 {
+    *output = NULL;
     lua_vm_t lvm = (lua_vm_t)impl;
     if(!lvm) return POESIE_ERR_INVALID_ARG;
     if(ABT_SUCCESS != ABT_mutex_lock(lvm->mutex))
         return POESIE_ERR_ARGOBOTS;
     luaL_dostring(lvm->L, code);
     const char* str = lua_tostring(lvm->L, -1);
-    *output = strdup(str);
+    if(str)
+        *output = strdup(str);
     lua_pop(lvm->L, 1);
     ABT_mutex_unlock(lvm->mutex);
     return 0;
@@ -71,4 +81,10 @@ static int poesie_lua_finalize(void* impl)
     ABT_mutex_free(&(lvm->mutex));
     free(lvm);
     return 0;
+}
+
+static struct json_object* poesie_lua_get_config(void* impl) {
+    struct json_object* config = json_object_new_object();
+    json_object_object_add(config, "language", json_object_new_string("lua"));
+    return config;
 }

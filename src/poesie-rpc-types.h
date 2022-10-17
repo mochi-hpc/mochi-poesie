@@ -1,6 +1,6 @@
 /*
  * (C) 2018 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #ifndef __POESIE_RPC_TYPE_H
@@ -17,7 +17,7 @@
 #include "poesie-common.h"
 
 // ------------- GET_VM_INFO ------------- //
-MERCURY_GEN_PROC(get_vm_info_in_t, 
+MERCURY_GEN_PROC(get_vm_info_in_t,
         ((hg_string_t)(name)))
 MERCURY_GEN_PROC(get_vm_info_out_t, ((int64_t)(vm_id))\
         ((int32_t)(lang))\

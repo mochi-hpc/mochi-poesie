@@ -1,8 +1,10 @@
 /*
  * (C) 2018 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
+#include <stdlib.h>
+#include <margo-logging.h>
 #include "poesie-client.h"
 #include "poesie-rpc-types.h"
 
@@ -72,9 +74,10 @@ int poesie_client_init(margo_instance_id mid, poesie_client_t* client)
 int poesie_client_finalize(poesie_client_t client)
 {
     if(client->num_provider_handles != 0) {
-        fprintf(stderr,
-                "[POESIE] Warning: %d provider handles not released before poesie_client_finalize was called\n",
-                client->num_provider_handles);
+        margo_warning(client->mid,
+            "[poesie] %lu provider handles not released "
+            "before poesie_client_finalize was called",
+            client->num_provider_handles);
     }
     free(client);
     return POESIE_SUCCESS;
@@ -86,7 +89,7 @@ int poesie_provider_handle_create(
         uint16_t provider_id,
         poesie_provider_handle_t* handle)
 {
-    if(client == POESIE_CLIENT_NULL) 
+    if(client == POESIE_CLIENT_NULL)
         return POESIE_ERR_INVALID_ARG;
 
     poesie_provider_handle_t provider =
@@ -199,20 +202,23 @@ int poesie_create_vm(
             provider->client->poesie_create_vm_id,
             &handle);
     if(hret != HG_SUCCESS) {
-        fprintf(stderr,"[POESIE] margo_create() failed in poesie_create_vm()\n");
+        margo_error(provider->client->mid,
+            "[poesie] margo_create() failed in poesie_create_vm()");
         return POESIE_ERR_MERCURY;
     }
 
     hret = margo_provider_forward(provider->provider_id, handle, &in);
     if(hret != HG_SUCCESS) {
-        fprintf(stderr,"[POESIE] margo_forward() failed in poesie_create_vm()\n");
+        margo_error(provider->client->mid,
+            "[poesie] margo_forward() failed in poesie_create_vm()");
         margo_destroy(handle);
         return POESIE_ERR_MERCURY;
     }
 
     hret = margo_get_output(handle, &out);
     if(hret != HG_SUCCESS) {
-        fprintf(stderr,"[POESIE] margo_get_output() failed in poesie_create_vm()\n");
+        margo_error(provider->client->mid,
+            "[poesie] margo_get_output() failed in poesie_create_vm()");
         margo_destroy(handle);
         return POESIE_ERR_MERCURY;
     }
@@ -247,20 +253,23 @@ int poesie_delete_vm(
             provider->client->poesie_delete_vm_id,
             &handle);
     if(hret != HG_SUCCESS) {
-        fprintf(stderr,"[POESIE] margo_create() failed in poesie_delete_vm()\n");
+        margo_error(provider->client->mid,
+            "[poesie] margo_create() failed in poesie_delete_vm()");
         return POESIE_ERR_MERCURY;
     }
 
     hret = margo_provider_forward(provider->provider_id, handle, &in);
     if(hret != HG_SUCCESS) {
-        fprintf(stderr,"[POESIE] margo_forward() failed in poesie_delete_vm()\n");
+        margo_error(provider->client->mid,
+            "[poesie] margo_forward() failed in poesie_delete_vm()");
         margo_destroy(handle);
         return POESIE_ERR_MERCURY;
     }
 
     hret = margo_get_output(handle, &out);
     if(hret != HG_SUCCESS) {
-        fprintf(stderr,"[POESIE] margo_get_output() failed in poesie_delete_vm()\n");
+        margo_error(provider->client->mid,
+            "[poesie] margo_get_output() failed in poesie_delete_vm()");
         margo_destroy(handle);
         return POESIE_ERR_MERCURY;
     }
@@ -274,7 +283,7 @@ int poesie_delete_vm(
 }
 
 int poesie_execute(
-        poesie_provider_handle_t provider, 
+        poesie_provider_handle_t provider,
         poesie_vm_id_t vm_id,
         poesie_lang_t lang,
         const char* code,
@@ -298,20 +307,23 @@ int poesie_execute(
             provider->client->poesie_execute_id,
             &handle);
     if(hret != HG_SUCCESS) {
-        fprintf(stderr,"[POESIE] margo_create() failed in poesie_execute()\n");
+        margo_error(provider->client->mid,
+            "[poesie] margo_create() failed in poesie_execute()");
         return POESIE_ERR_MERCURY;
     }
 
     hret = margo_provider_forward(provider->provider_id, handle, &in);
     if(hret != HG_SUCCESS) {
-        fprintf(stderr,"[POESIE] margo_forward() failed in poesie_execute()\n");
+        margo_error(provider->client->mid,
+            "[poesie] margo_forward() failed in poesie_execute()");
         margo_destroy(handle);
         return POESIE_ERR_MERCURY;
     }
 
     hret = margo_get_output(handle, &out);
     if(hret != HG_SUCCESS) {
-        fprintf(stderr,"[POESIE] margo_get_output() failed in poesie_execute()\n");
+        margo_error(provider->client->mid,
+            "[poesie] margo_get_output() failed in poesie_execute()");
         margo_destroy(handle);
         return POESIE_ERR_MERCURY;
     }
@@ -324,11 +336,6 @@ int poesie_execute(
 
     margo_destroy(handle);
     return ret;
-}
-
-int poesie_shutdown_service(poesie_client_t client, hg_addr_t addr)
-{
-    return margo_shutdown_remote_instance(client->mid, addr);
 }
 
 int poesie_free_output(char* output)

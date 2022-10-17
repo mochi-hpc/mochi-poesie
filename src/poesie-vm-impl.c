@@ -1,17 +1,17 @@
 /*
  * (C) 2018 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #include <stdlib.h>
-#include "src/poesie-config.h"
-#include "src/poesie-vm.h"
-#include "src/poesie-vm-impl.h"
-#ifdef USE_PYTHON
-#include "src/lang/poesie-python.h"
+#include "config.h"
+#include "poesie-vm.h"
+#include "poesie-vm-impl.h"
+#ifdef POESIE_HAS_PYTHON
+#include "lang/poesie-python.h"
 #endif
-#ifdef USE_LUA
-#include "src/lang/poesie-lua.h"
+#ifdef POESIE_HAS_LUA
+#include "lang/poesie-lua.h"
 #endif
 
 int poesie_vm_execute(poesie_vm_t vm, const char* code, char** output)
@@ -23,20 +23,22 @@ int poesie_vm_execute(poesie_vm_t vm, const char* code, char** output)
     }
 }
 
-int poesie_vm_create(const char* name, poesie_lang_t lang, poesie_vm_t* vm)
+int poesie_vm_create(const char* name, margo_instance_id mid, poesie_lang_t lang, poesie_vm_t* vm)
 {
     poesie_vm_t tmp_vm = NULL;
     switch(lang) {
         case POESIE_LANG_PYTHON:
-#ifdef USE_PYTHON
+#ifdef POESIE_HAS_PYTHON
             tmp_vm = calloc(1, sizeof(*tmp_vm));
-            poesie_py_vm_init(tmp_vm, name);
+            tmp_vm->mid = mid;
+            poesie_py_vm_init(tmp_vm, mid, name);
 #endif
             break;
         case POESIE_LANG_LUA:
-#ifdef USE_LUA
+#ifdef POESIE_HAS_LUA
             tmp_vm = calloc(1, sizeof(*tmp_vm));
-            poesie_lua_vm_init(tmp_vm, name);
+            tmp_vm->mid = mid;
+            poesie_lua_vm_init(tmp_vm, mid, name);
 #endif
             break;
         default:
@@ -55,6 +57,7 @@ int poesie_vm_destroy(poesie_vm_t vm)
     int ret;
     if(vm) {
         ret = vm->finalize(vm->impl);
+        free(vm->preamble);
         free(vm);
         return ret;
     } else {
@@ -70,4 +73,14 @@ int poesie_vm_get_lang(poesie_vm_t vm, poesie_lang_t* lang)
     } else {
         return POESIE_ERR_INVALID_ARG;
     }
+}
+
+struct json_object* poesie_vm_get_config(poesie_vm_t vm)
+{
+    if(!vm) return NULL;
+    struct json_object* config = vm->get_config(vm->impl);
+    if(vm->preamble)
+        json_object_object_add(config, "preamble",
+            json_object_new_string(vm->preamble));
+    return config;
 }

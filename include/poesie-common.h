@@ -1,9 +1,9 @@
 /*
  * (C) 2018 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
-#ifndef __POESIE_COMMON_H 
+#ifndef __POESIE_COMMON_H
 #define __POESIE_COMMON_H
 
 #include <stdint.h>
@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-typedef enum poesie_lang_t 
+typedef enum poesie_lang_t
 {
     POESIE_LANG_DEFAULT = 0, /* Poesie will use the language of the target VM */
     POESIE_LANG_PYTHON,      /* Python VM */
@@ -39,4 +39,4 @@ typedef int64_t poesie_vm_id_t;
 }
 #endif
 
-#endif 
+#endif

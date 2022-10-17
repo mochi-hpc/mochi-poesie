@@ -1,10 +1,11 @@
 /*
  * (C) 2018 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <unistd.h>
 #include <margo.h>
@@ -18,8 +19,7 @@ int main(int argc, char *argv[])
     char *vm_name;
     margo_instance_id mid;
     hg_addr_t svr_addr;
-    uint8_t mplex_id;
-    uint32_t num_keys;
+    uint16_t provider_id;
     poesie_client_t pcl;
     poesie_provider_handle_t pph;
     hg_return_t hret;
@@ -27,12 +27,12 @@ int main(int argc, char *argv[])
 
     if(argc != 4)
     {
-        fprintf(stderr, "Usage: %s <poesie_server_addr> <mplex_id> <vm_name>\n", argv[0]);
-        fprintf(stderr, "  Example: %s tcp://localhost:1234 1 foo \n", argv[0]);
+        fprintf(stderr, "Usage: %s <poesie_server_addr> <provider_id> <vm_name>\n", argv[0]);
+        fprintf(stderr, "  Example: %s tcp://127.0.0.1:1234 1 foo\n", argv[0]);
         return(-1);
     }
     poesie_svr_addr_str = argv[1];
-    mplex_id            = atoi(argv[2]);
+    provider_id         = atoi(argv[2]);
     vm_name             = argv[3];
 
     /* initialize Margo using the transport portion of the server
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
         cli_addr_prefix[i] = poesie_svr_addr_str[i];
 
     /* start margo */
-    mid = margo_init(cli_addr_prefix, MARGO_SERVER_MODE, 0, 0);
+    mid = margo_init(cli_addr_prefix, MARGO_CLIENT_MODE, 0, 0);
     if(mid == MARGO_INSTANCE_NULL)
     {
         fprintf(stderr, "Error: margo_init()\n");
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     }
 
     /* create a POESIE provider handle */
-    ret = poesie_provider_handle_create(pcl, svr_addr, mplex_id, &pph);
+    ret = poesie_provider_handle_create(pcl, svr_addr, provider_id, &pph);
     if(ret != 0)
     {
         fprintf(stderr, "Error: poesie_provider_handle_create()\n");
@@ -95,11 +95,12 @@ int main(int argc, char *argv[])
     }
 
     /* executing something */
-    /* fortunately print("Hello World") is a valid statement
-       both in Lua and Python so this will work whatever the
-       backend language. */
-    const char* pycode = "print 'Hello World from Python'";
-    const char* luacode = "print(\"Hello World from Lua\"); return \"Bonjour\"";
+    const char* pycode =
+        "print(f\"Hello World from Python VM {__name__}\")\n"
+        "from pymargo.core import Engine\n"
+        "engine = Engine.from_margo_instance_id(__mid__)\n"
+        "__poesie_output__ = \"Bonjour\"";
+    const char* luacode = "print(\"Hello World from Lua VM \" .. __name__); return \"Bonjour\"";
 
     const char* code = (lang == POESIE_LANG_PYTHON) ? pycode : luacode;
 
@@ -141,9 +142,6 @@ int main(int argc, char *argv[])
         ret = -1;
         goto finish;
     }
-
-    /* shutdown the server */
-    ret = poesie_shutdown_service(pcl, svr_addr);
 
 finish:
     /**** cleanup ****/
