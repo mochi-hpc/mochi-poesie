@@ -57,6 +57,7 @@ int poesie_vm_destroy(poesie_vm_t vm)
     int ret;
     if(vm) {
         ret = vm->finalize(vm->impl);
+        free(vm->preamble);
         free(vm);
         return ret;
     } else {
@@ -72,4 +73,14 @@ int poesie_vm_get_lang(poesie_vm_t vm, poesie_lang_t* lang)
     } else {
         return POESIE_ERR_INVALID_ARG;
     }
+}
+
+struct json_object* poesie_vm_get_config(poesie_vm_t vm)
+{
+    if(!vm) return NULL;
+    struct json_object* config = vm->get_config(vm->impl);
+    if(vm->preamble)
+        json_object_object_add(config, "preamble",
+            json_object_new_string(vm->preamble));
+    return config;
 }

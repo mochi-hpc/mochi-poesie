@@ -26,6 +26,7 @@ typedef struct python_vm {
 
 static int poesie_py_execute(void* impl, const char* code, char** output);
 static int poesie_py_finalize(void* impl);
+static struct json_object* poesie_py_get_config(void* impl);
 
 static int init_python();
 static int finalize_python();
@@ -94,8 +95,9 @@ int poesie_py_vm_init(poesie_vm_t vm, margo_instance_id mid, const char* name)
 
     vm->lang = POESIE_LANG_PYTHON;
     vm->impl = (void*)pvm;
-    vm->execute  = &poesie_py_execute;
-    vm->finalize = &poesie_py_finalize;
+    vm->execute    = &poesie_py_execute;
+    vm->finalize   = &poesie_py_finalize;
+    vm->get_config = &poesie_py_get_config;
 
     return 0;
 }
@@ -210,6 +212,13 @@ static int poesie_py_finalize(void* impl)
         finalize_python();
     }
     return 0;
+}
+
+static struct json_object* poesie_py_get_config(void* impl)
+{
+    struct json_object* config = json_object_new_object();
+    json_object_object_add(config, "language", json_object_new_string("python"));
+    return config;
 }
 
 static int init_python() {

@@ -31,9 +31,7 @@ static int poesie_deregister_provider(
 
 static char* poesie_get_provider_config(
         bedrock_module_provider_t provider) {
-    (void)provider;
-    // TODO
-    return strdup("{}");
+    return poesie_provider_get_config(provider);
 }
 
 static int poesie_init_client(

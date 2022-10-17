@@ -21,6 +21,7 @@ typedef struct lua_vm {
 
 static int poesie_lua_execute(void* impl, const char* code, char** output);
 static int poesie_lua_finalize(void* impl);
+static struct json_object* poesie_lua_get_config(void* impl);
 
 int poesie_lua_vm_init(poesie_vm_t vm, margo_instance_id mid, const char* name)
 {
@@ -49,8 +50,9 @@ int poesie_lua_vm_init(poesie_vm_t vm, margo_instance_id mid, const char* name)
 
     vm->lang = POESIE_LANG_LUA;
     vm->impl = (void*)lvm;
-    vm->execute  = &poesie_lua_execute;
-    vm->finalize = &poesie_lua_finalize;
+    vm->execute    = &poesie_lua_execute;
+    vm->finalize   = &poesie_lua_finalize;
+    vm->get_config = &poesie_lua_get_config;
 
     return 0;
 }
@@ -79,4 +81,10 @@ static int poesie_lua_finalize(void* impl)
     ABT_mutex_free(&(lvm->mutex));
     free(lvm);
     return 0;
+}
+
+static struct json_object* poesie_lua_get_config(void* impl) {
+    struct json_object* config = json_object_new_object();
+    json_object_object_add(config, "language", json_object_new_string("lua"));
+    return config;
 }

@@ -119,6 +119,18 @@ int poesie_provider_list_vms(
         poesie_provider_t provider,
         poesie_vm_id_t* vms);
 
+
+/**
+ * @brief Get the JSON configuration of the provider.
+ * It is the caller's responsibility to call free() on
+ * the returned string.
+ *
+ * @param provider Provider.
+ *
+ * @return Configuration or NULL.
+ */
+char* poesie_provider_get_config(poesie_provider_t provider);
+
 #ifdef __cplusplus
 }
 #endif

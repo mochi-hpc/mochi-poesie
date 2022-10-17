@@ -8,6 +8,7 @@
 #include <json-c/json.h>
 #include <margo-logging.h>
 #include "poesie-vm.h"
+#include "poesie-vm-impl.h"
 #include "poesie-rpc-types.h"
 #include "poesie-server.h"
 
@@ -272,6 +273,26 @@ int poesie_provider_list_vms(
         }
     }
     return POESIE_SUCCESS;
+}
+
+char* poesie_provider_get_config(poesie_provider_t provider)
+{
+    if(!provider) return NULL;
+    struct json_object* config = json_object_new_object();
+    struct json_object* vms = json_object_new_object();
+
+    for(uint64_t i=0; i < provider->num_vms; i++) {
+        const char* vm_name = provider->vm_names[i];
+        poesie_vm_t vm      = provider->vms[i];
+        struct json_object* vm_config = poesie_vm_get_config(vm);
+        if(!vm_config) vm_config = json_object_new_null();
+        json_object_object_add(vms, vm_name, vm_config);
+    }
+    json_object_object_add(config, "vms", vms);
+
+    char* result = strdup(json_object_to_json_string(config));
+    json_object_put(config);
+    return result;
 }
 
 static void poesie_get_vm_info_ult(hg_handle_t handle)
@@ -623,6 +644,7 @@ static int create_vms_from_config(poesie_provider_t provider, struct json_object
                     vm_name, output ? output : "(not output)");
             }
             free(output);
+            provider->vms[vm_id]->preamble = strdup(preamble);
         }
     }
     return 0;
