@@ -21,6 +21,8 @@ typedef struct python_vm {
     PyObject* main;
     PyObject* globalDictionary;
     PyObject* localDictionary;
+    margo_instance_id mid;
+    hg_addr_t address;
     ABT_mutex mutex;
 }* python_vm_t;
 
@@ -69,9 +71,11 @@ int poesie_py_vm_init(poesie_vm_t vm, margo_instance_id mid, const char* name)
     PyThreadState* old_ts = PyThreadState_Swap(new_ts);
 #endif
     /* initialize the context */
+    pvm->mid              = mid;
     pvm->main             = PyImport_AddModule("__main__");
     pvm->globalDictionary = PyModule_GetDict(pvm->main);
     pvm->localDictionary  = PyDict_New();
+    margo_addr_self(mid, &pvm->address);
 
     if(name) {
         PyObject* namePyObj = PyUnicode_FromString(name);
@@ -82,6 +86,10 @@ int poesie_py_vm_init(poesie_vm_t vm, margo_instance_id mid, const char* name)
     PyObject* pyMid = PyCapsule_New((void*)mid, "margo_instance_id", NULL);
     PyDict_SetItemString(pvm->localDictionary, "__mid__", pyMid);
     Py_DECREF(pyMid);
+
+    PyObject* pyAddr = PyCapsule_New((void*)pvm->address, "hg_addr_t", NULL);
+    PyDict_SetItemString(pvm->localDictionary, "__address__", pyAddr);
+    Py_DECREF(pyAddr);
 
 #ifdef ALLOW_SUBINT
     /* swap to back to old thread state */
@@ -207,6 +215,7 @@ static int poesie_py_finalize(void* impl)
     PyThreadState_Swap(old_ts);
 #endif
     ABT_mutex_free(&pvm->mutex);
+    margo_addr_free(pvm->mid, pvm->address);
     free(pvm);
     if(atomic_fetch_sub(&num_open_vms, 1) == 1) {
         finalize_python();

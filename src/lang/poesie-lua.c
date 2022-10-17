@@ -17,6 +17,8 @@
 typedef struct lua_vm {
     lua_State *L;
     ABT_mutex mutex;
+    margo_instance_id mid;
+    hg_addr_t address;
 }* lua_vm_t;
 
 static int poesie_lua_execute(void* impl, const char* code, char** output);
@@ -42,11 +44,17 @@ int poesie_lua_vm_init(poesie_vm_t vm, margo_instance_id mid, const char* name)
     }
     luaL_openlibs(lvm->L);
 
+    lvm->mid = mid;
+    margo_addr_self(mid, &lvm->address);
+
     lua_pushstring(lvm->L, name ? name : "<anonymous>");
     lua_setglobal(lvm->L, "__name__");
 
     lua_pushlightuserdata(lvm->L, mid);
     lua_setglobal(lvm->L, "__mid__");
+
+    lua_pushlightuserdata(lvm->L, lvm->address);
+    lua_setglobal(lvm->L, "__address__");
 
     vm->lang = POESIE_LANG_LUA;
     vm->impl = (void*)lvm;
@@ -79,6 +87,7 @@ static int poesie_lua_finalize(void* impl)
     if(!lvm) return POESIE_ERR_INVALID_ARG;
     lua_close(lvm->L);
     ABT_mutex_free(&(lvm->mutex));
+    margo_addr_free(lvm->mid, lvm->address);
     free(lvm);
     return 0;
 }
