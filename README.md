@@ -27,7 +27,7 @@ by providing a JSON configuration like the following to Bedrock.
 ```json
 {
     "libraries": [
-        "libpoesie-bedrock-module.so
+        "libpoesie-bedrock-module.so"
     ],
     "providers": [
         {
