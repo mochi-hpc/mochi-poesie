@@ -125,8 +125,8 @@ install (EXPORT poesie-targets
 install (FILES "${CMAKE_CURRENT_BINARY_DIR}/poesie-config.cmake"
                "${CMAKE_CURRENT_BINARY_DIR}/poesie-config-version.cmake"
          DESTINATION ${poesie-pkg} )
- install (FILES ../include/*.h
-          DESTINATION include)
+ install (DIRECTORY ../include/
+         DESTINATION include)
 install (FILES "${CMAKE_CURRENT_BINARY_DIR}/poesie-server.pc"
                "${CMAKE_CURRENT_BINARY_DIR}/poesie-client.pc"
          DESTINATION "lib/pkgconfig/")

@@ -8,5 +8,5 @@ Description: Mochi POESIE client library
 Version: @POESIE_VERSION@
 
 Requires: margo
-Libs: -L${libdir} @SERVER_PRIVATE_LIBS@
+Libs: -L${libdir} @SERVER_PRIVATE_LIBS@ json-c
 Cflags: -I${includedir}
