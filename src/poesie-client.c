@@ -5,7 +5,7 @@
  */
 #include <stdlib.h>
 #include <margo-logging.h>
-#include "poesie-client.h"
+#include "poesie/client.h"
 #include "poesie-rpc-types.h"
 
 struct poesie_client {

@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <margo.h>
 
-#include <poesie-client.h>
+#include <poesie/client.h>
 
 int main(int argc, char *argv[])
 {

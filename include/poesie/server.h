@@ -8,7 +8,7 @@
 #define __POESIE_SERVER_H
 
 #include <margo.h>
-#include <poesie-common.h>
+#include <poesie/common.h>
 
 #ifdef __cplusplus
 extern "C" {

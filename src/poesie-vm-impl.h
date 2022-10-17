@@ -8,7 +8,7 @@
 
 #include <margo.h>
 #include <json-c/json.h>
-#include "poesie-common.h"
+#include "poesie/common.h"
 
 typedef int (*execute_fn)(void*, const char*, char**);
 typedef int (*finalize_fn)(void*);

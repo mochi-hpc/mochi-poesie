@@ -4,8 +4,8 @@
  * See COPYRIGHT in top-level directory.
  */
 #include <bedrock/module.h>
-#include "poesie-server.h"
-#include "poesie-client.h"
+#include "poesie/server.h"
+#include "poesie/client.h"
 #include <string.h>
 
 static int poesie_register_provider(

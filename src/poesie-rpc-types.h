@@ -14,7 +14,7 @@
 
 #include <margo.h>
 
-#include "poesie-common.h"
+#include "poesie/common.h"
 
 // ------------- GET_VM_INFO ------------- //
 MERCURY_GEN_PROC(get_vm_info_in_t,

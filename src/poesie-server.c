@@ -10,7 +10,7 @@
 #include "poesie-vm.h"
 #include "poesie-vm-impl.h"
 #include "poesie-rpc-types.h"
-#include "poesie-server.h"
+#include "poesie/server.h"
 
 struct poesie_provider
 {

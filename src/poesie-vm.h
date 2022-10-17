@@ -8,7 +8,7 @@
 
 #include <margo.h>
 #include <json-c/json.h>
-#include "poesie-common.h"
+#include "poesie/common.h"
 
 #ifdef __cplusplus
 extern "C" {

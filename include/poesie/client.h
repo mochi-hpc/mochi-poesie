@@ -8,7 +8,7 @@
 
 #include <margo.h>
 #include <stdint.h>
-#include <poesie-common.h>
+#include <poesie/common.h>
 
 #if defined(__cplusplus)
 extern "C" {
