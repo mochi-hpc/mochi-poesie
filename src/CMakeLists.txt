@@ -35,6 +35,7 @@ set (poesie-vers "${POESIE_VERSION_MAJOR}.${POESIE_VERSION_MINOR}")
 
 # server library
 add_library (poesie-server ${server-src-files} ${backend-src-files})
+set_property (TARGET poesie-server PROPERTY C_STANDARD 11)
 target_link_libraries (poesie-server
     PUBLIC PkgConfig::margo
     PRIVATE coverage_config ${LANG_DEPENDENCIES})
@@ -50,6 +51,7 @@ set_target_properties (poesie-server
 
 # client library
 add_library (poesie-client ${client-src-files})
+set_property (TARGET poesie-client PROPERTY C_STANDARD 11)
 target_link_libraries (poesie-client
     PUBLIC PkgConfig::margo
     PRIVATE coverage_config)
@@ -66,6 +68,7 @@ set_target_properties (poesie-client
 if (${ENABLE_BEDROCK})
   # bedrock-module library
   add_library (poesie-bedrock-module ${bedrock-module-src-files})
+  set_property (TARGET poesie-bedrock-module PROPERTY C_STANDARD 11)
   target_link_libraries (poesie-bedrock-module
     PUBLIC poesie-server
     PUBLIC poesie-client

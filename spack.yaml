@@ -6,5 +6,6 @@ spack:
   - lua
   - python
   - json-c
+  - py-mochi-margo@main
   concretizer:
     unify: true

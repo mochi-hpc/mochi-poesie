@@ -95,7 +95,11 @@ int main(int argc, char *argv[])
     }
 
     /* executing something */
-    const char* pycode = "print(f\"Hello World from Python VM {__name__}\"); __poesie_output__ = \"Bonjour\"";
+    const char* pycode =
+        "print(f\"Hello World from Python VM {__name__}\")\n"
+        "from pymargo.core import Engine\n"
+        "engine = Engine.from_margo_instance_id(__mid__)\n"
+        "__poesie_output__ = \"Bonjour\"";
     const char* luacode = "print(\"Hello World from Lua VM \" .. __name__); return \"Bonjour\"";
 
     const char* code = (lang == POESIE_LANG_PYTHON) ? pycode : luacode;
