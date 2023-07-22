@@ -93,6 +93,7 @@ static int poesie_lua_finalize(void* impl)
 }
 
 static struct json_object* poesie_lua_get_config(void* impl) {
+    (void)impl;
     struct json_object* config = json_object_new_object();
     json_object_object_add(config, "language", json_object_new_string("lua"));
     return config;

@@ -146,10 +146,10 @@ int poesie_provider_destroy(poesie_provider_t provider)
             "[poesie] poesie_provider_destroy called with invalid provider");
         return POESIE_ERR_INVALID_ARG;
     }
-    poesie_server_finalize_cb((void*)provider);
-
     margo_provider_pop_finalize_callback(
         provider->mid, provider);
+
+    poesie_server_finalize_cb((void*)provider);
 
     return POESIE_SUCCESS;
 }
