@@ -18,7 +18,8 @@ add_library (coverage_config INTERFACE)
 option (ENABLE_COVERAGE   "Enable coverage reporting" OFF)
 option (ENABLE_BEDROCK    "Build bedrock module" OFF)
 option (ENABLE_LUA        "Build with Lua support" OFF)
-option (ENABLE_PYTHON     "Build the Python module" OFF)
+option (ENABLE_PYTHON     "Build the Python support" OFF)
+option (ENABLE_JAVASCRIPT "Build with QuickJS support" OFF)
 
 if (ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options (coverage_config INTERFACE
@@ -73,10 +74,17 @@ endif ()
 
 if (ENABLE_PYTHON)
     find_package (Python3 COMPONENTS Interpreter Development REQUIRED)
-    find_package (pybind11 REQUIRED)
+    #find_package (pybind11 REQUIRED)
     set (POESIE_HAS_PYTHON ON)
 else ()
     set (POESIE_HAS_PYTHON OFF)
+endif ()
+
+if (ENABLE_JAVASCRIPT)
+    find_package (QuickJS REQUIRED)
+    set (POESIE_HAS_JAVASCRIPT ON)
+else ()
+    set (POESIE_HAS_JAVASCRIPT OFF)
 endif ()
 
 # library version set here (e.g. for shared libs).

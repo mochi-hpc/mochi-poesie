@@ -9,20 +9,27 @@ set (client-src-files
 set (bedrock-module-src-files
      poesie-bedrock.c)
 
-set (LANG_DEPENDENCIES "")
+set (LANG_LIBS "")
 
 if (ENABLE_LUA)
   list (APPEND server-src-files
         lang/poesie-lua.c)
-  list (APPEND LANG_DEPENDENCIES ${LUA_LIBRARIES})
-  include_directories (${LUA_INCLUDE_DIR})
+  list (APPEND LANG_LIBS ${LUA_LIBRARIES})
+  include_directories (SYSTEM ${LUA_INCLUDE_DIR})
 endif (ENABLE_LUA)
 
 if (ENABLE_PYTHON)
    list (APPEND server-src-files
          lang/poesie-python.c)
-   list (APPEND LANG_DEPENDENCIES Python3::Python) #pybind11::embed)
+   list (APPEND LANG_LIBS Python3::Python) #pybind11::embed)
 endif (ENABLE_PYTHON)
+
+if (ENABLE_JAVASCRIPT)
+   list (APPEND server-src-files
+         lang/poesie-javascript.c)
+   list (APPEND LANG_LIBS ${QuickJS_LIBRARIES})
+   include_directories (SYSTEM ${QuickJS_INCLUDE_DIRS})
+endif (ENABLE_JAVASCRIPT)
 
 # load package helper for generating cmake CONFIG packages
 include (CMakePackageConfigHelpers)
@@ -38,7 +45,7 @@ add_library (poesie-server ${server-src-files} ${backend-src-files})
 set_property (TARGET poesie-server PROPERTY C_STANDARD 11)
 target_link_libraries (poesie-server
     PUBLIC PkgConfig::margo
-    PRIVATE coverage_config ${LANG_DEPENDENCIES})
+    PRIVATE coverage_config ${LANG_LIBS})
 target_compile_definitions (poesie-server PRIVATE -DJSON_HAS_CPP_14)
 target_include_directories (poesie-server PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (poesie-server BEFORE PUBLIC
