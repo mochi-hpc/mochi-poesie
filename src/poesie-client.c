@@ -153,18 +153,26 @@ int poesie_get_vm_info(
             provider->addr,
             provider->client->poesie_get_vm_info_id,
             &handle);
-    if(hret != HG_SUCCESS) return POESIE_ERR_MERCURY;
+    if(hret != HG_SUCCESS) {
+        margo_error(provider->client->mid,
+            "[poesie] in poesie_get_vm_info: margo_create returned %d", hret);
+        return POESIE_ERR_MERCURY;
+    }
 
     in.name = (char*)vm_name;
 
     hret = margo_provider_forward(provider->provider_id, handle, &in);
     if(hret != HG_SUCCESS) {
+        margo_error(provider->client->mid,
+            "[poesie] in poesie_get_vm_info: margo_provider_forward returned %d", hret);
         margo_destroy(handle);
         return POESIE_ERR_MERCURY;
     }
 
     hret = margo_get_output(handle, &out);
     if(hret != HG_SUCCESS) {
+        margo_error(provider->client->mid,
+            "[poesie] in poesie_get_vm_info: margo_get_output returned %d", hret);
         margo_destroy(handle);
         return POESIE_ERR_MERCURY;
     }

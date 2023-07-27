@@ -1,10 +1,10 @@
 spack:
   specs:
   - cmake
-  - mochi-margo
-  - mercury~boostsys~checksum
+  - mochi-margo@0.14.1
+  - mercury@2.3.0~boostsys~checksum
   - mochi-bedrock
-  - lua-sol2
+  - lua
   - python
   - json-c
   - quickjs

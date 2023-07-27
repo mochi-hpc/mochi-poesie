@@ -39,6 +39,21 @@ static JSContext *JS_NewCustomContext(JSRuntime *rt)
     /* system modules */
     js_init_module_std(ctx, "std");
     js_init_module_os(ctx, "os");
+
+    const char *str = "import * as std from 'std';\n"
+                      "import * as os from 'os';\n"
+                      "globalThis.std = std;\n"
+                      "globalThis.os = os;\n";
+
+    JSValue val = JS_Eval(ctx, str, strlen(str), "<init>",
+                          JS_EVAL_TYPE_MODULE|JS_EVAL_FLAG_COMPILE_ONLY);
+    if (!JS_IsException(val)) {
+        js_module_set_import_meta(ctx, val, 1, 1);
+        val = JS_EvalFunction(ctx, val);
+    } else {
+        js_std_dump_error(ctx);
+    }
+    JS_FreeValue(ctx, val);
     return ctx;
 }
 
@@ -57,7 +72,7 @@ int poesie_js_vm_init(poesie_vm_t vm, margo_instance_id mid, const char* name)
     pvm->js_rt = JS_NewRuntime();
     js_std_set_worker_new_context_func(JS_NewCustomContext);
     js_std_init_handlers(pvm->js_rt);
-    pvm->js_ctx = JS_NewContext(pvm->js_rt);
+    pvm->js_ctx = JS_NewCustomContext(pvm->js_rt);
     JS_SetModuleLoaderFunc(pvm->js_rt, NULL, js_module_loader, NULL);
     pvm->name = strdup(name);
 
@@ -76,7 +91,7 @@ static int poesie_js_execute(void* impl, const char* code, char** output)
     javascript_vm_t pvm = (javascript_vm_t)impl;
     ABT_mutex_lock(pvm->mutex);
     JSContext* ctx = pvm->js_ctx;
-    JSValue val = JS_Eval(ctx, code, strlen(code), pvm->name, JS_EVAL_TYPE_GLOBAL);
+    JSValue val = JS_Eval(ctx, code, strlen(code), pvm->name, 0);
     if(JS_IsException(val)) {
         JSValue exception_val = JS_GetException(ctx);
         const char* str = JS_ToCString(ctx, exception_val);

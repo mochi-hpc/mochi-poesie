@@ -73,10 +73,11 @@ static int poesie_lua_execute(void* impl, const char* code, char** output)
     if(ABT_SUCCESS != ABT_mutex_lock(lvm->mutex))
         return POESIE_ERR_ARGOBOTS;
     luaL_dostring(lvm->L, code);
-    const char* str = lua_tostring(lvm->L, -1);
-    if(str)
-        *output = strdup(str);
-    lua_pop(lvm->L, 1);
+    if (!lua_isnil (lvm->L, -1)) {
+        const char* str = lua_tostring(lvm->L, -1);
+        if(str) *output = strdup(str);
+        lua_pop(lvm->L, 1);
+    }
     ABT_mutex_unlock(lvm->mutex);
     return 0;
 }
