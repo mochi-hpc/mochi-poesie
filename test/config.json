@@ -11,11 +11,15 @@
                 "vms": {
                     "my_python_vm": {
                         "language": "python",
-                        "preamble": "print(\"This is the preamble\")"
+                        "preamble": "print(\"This is the python preamble\")"
                     },
                     "my_lua_vm": {
                         "language": "lua",
-                        "preamble": "print(\"This is the preamble\")"
+                        "preamble": "print(\"This is the lua preamble\")"
+                    },
+                    "my_javascript_vm" : {
+                        "language": "javascript",
+                        "preamble": "std.out.printf(\"This is the javascript preamble\\n\");\n"
                     }
                 }
             }

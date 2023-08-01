@@ -8,5 +8,6 @@
 
 #cmakedefine POESIE_HAS_LUA
 #cmakedefine POESIE_HAS_PYTHON
+#cmakedefine POESIE_HAS_JAVASCRIPT
 
 #endif

@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
     if(ret == 0) {
         printf("Successfuly open VM %s, id is %ld\n", vm_name, vm_id);
     } else {
-        fprintf(stderr, "Error: could not open database %s\n", vm_name);
+        fprintf(stderr, "Error: could not open VM %s\n", vm_name);
         fprintf(stderr, "       return code is %d\n", ret);
         poesie_provider_handle_release(pph);
         margo_addr_free(mid, svr_addr);
@@ -100,9 +100,26 @@ int main(int argc, char *argv[])
         "from pymargo.core import Engine\n"
         "engine = Engine.from_margo_instance_id(__mid__)\n"
         "__poesie_output__ = \"Bonjour\"";
-    const char* luacode = "print(\"Hello World from Lua VM \" .. __name__); return \"Bonjour\"";
+    const char* luacode =
+        "print(\"Hello World from Lua VM \" .. __name__);\n"
+        "return \"Bonjour\"";
+    const char* jscode =
+        "std.out.printf(\"Hello World from JS VM\");\n";
 
-    const char* code = (lang == POESIE_LANG_PYTHON) ? pycode : luacode;
+    const char* code = NULL;
+    switch(lang) {
+        case POESIE_LANG_PYTHON:
+            code = pycode;
+            break;
+        case POESIE_LANG_LUA:
+            code = luacode;
+            break;
+        case POESIE_LANG_JAVASCRIPT:
+            code = jscode;
+            break;
+        default:
+            fprintf(stderr, "Invalid language");
+    }
 
     char* output = NULL;
     ret = poesie_execute(pph, vm_id, POESIE_LANG_DEFAULT, code, &output);

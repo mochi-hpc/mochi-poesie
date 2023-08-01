@@ -16,7 +16,8 @@ typedef enum poesie_lang_t
 {
     POESIE_LANG_DEFAULT = 0, /* Poesie will use the language of the target VM */
     POESIE_LANG_PYTHON,      /* Python VM */
-    POESIE_LANG_LUA          /* Lua VM */
+    POESIE_LANG_LUA,         /* Lua VM */
+    POESIE_LANG_JAVASCRIPT   /* Javascript VM */
 } poesie_lang_t;
 
 typedef int64_t poesie_vm_id_t;
