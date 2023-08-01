@@ -1,14 +1,14 @@
 spack:
   specs:
   - cmake
-  - mochi-margo@0.14.1
-  - mercury@2.3.0~boostsys~checksum
+  - mochi-margo
+  - mercury
   - mochi-bedrock
   - lua
   - python
   - json-c
   - quickjs
-  - py-mochi-margo@main
+  - py-mochi-margo
   concretizer:
     unify: true
   modules:
