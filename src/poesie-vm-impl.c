@@ -13,6 +13,9 @@
 #ifdef POESIE_HAS_LUA
 #include "lang/poesie-lua.h"
 #endif
+#ifdef POESIE_HAS_JAVASCRIPT
+#include "lang/poesie-javascript.h"
+#endif
 
 int poesie_vm_execute(poesie_vm_t vm, const char* code, char** output)
 {
@@ -39,6 +42,13 @@ int poesie_vm_create(const char* name, margo_instance_id mid, poesie_lang_t lang
             tmp_vm = calloc(1, sizeof(*tmp_vm));
             tmp_vm->mid = mid;
             poesie_lua_vm_init(tmp_vm, mid, name);
+#endif
+            break;
+        case POESIE_LANG_JAVASCRIPT:
+#ifdef POESIE_HAS_JAVASCRIPT
+            tmp_vm = calloc(1, sizeof(*tmp_vm));
+            tmp_vm->mid = mid;
+            poesie_js_vm_init(tmp_vm, mid, name);
 #endif
             break;
         default:

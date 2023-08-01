@@ -146,10 +146,10 @@ int poesie_provider_destroy(poesie_provider_t provider)
             "[poesie] poesie_provider_destroy called with invalid provider");
         return POESIE_ERR_INVALID_ARG;
     }
-    poesie_server_finalize_cb((void*)provider);
-
     margo_provider_pop_finalize_callback(
         provider->mid, provider);
+
+    poesie_server_finalize_cb((void*)provider);
 
     return POESIE_SUCCESS;
 }
@@ -598,7 +598,9 @@ static int validate_config(margo_instance_id mid, struct json_object* config)
             return -1;
         }
         const char* lang = json_object_get_string(vm_lang);
-        if(strcmp(lang, "lua") != 0 && strcmp(lang, "python") != 0) {
+        if(strcmp(lang, "lua") != 0
+        && strcmp(lang, "python") != 0
+        && strcmp(lang, "javascript") != 0) {
             margo_error(mid,
                 "[poesie] Invalid language \"%s\" for VM \"%s\"",
                 lang, vm_name);
@@ -630,6 +632,7 @@ static int create_vms_from_config(poesie_provider_t provider, struct json_object
         poesie_lang_t lang = POESIE_LANG_DEFAULT;
         if(strcmp(vm_lang, "python") == 0) lang = POESIE_LANG_PYTHON;
         if(strcmp(vm_lang, "lua") == 0) lang = POESIE_LANG_LUA;
+        if(strcmp(vm_lang, "javascript") == 0) lang = POESIE_LANG_JAVASCRIPT;
         poesie_vm_id_t vm_id;
         poesie_provider_add_vm(provider, vm_name, lang, &vm_id);
         // check preamble
