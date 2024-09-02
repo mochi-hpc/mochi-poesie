@@ -12,7 +12,7 @@ spack:
   - lua-sol2
   - python
   - py-pybind11
-  - mruby ^ruby@3.0.0
+  - mruby
   concretizer:
     unify: true
     reuse: true
