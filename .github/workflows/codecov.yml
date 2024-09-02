@@ -23,7 +23,7 @@ jobs:
 
     - name: Install ruby
       run: |
-        apt install ruby3.0-dev
+        sudo apt install ruby3.0-dev
 
     - name: Add mochi-spack-packages
       run: |

@@ -20,7 +20,7 @@ jobs:
 
     - name: Install ruby
       run: |
-        apt install ruby3.0-dev
+        sudo apt install ruby3.0-dev
 
     - name: Setup spack
       uses: spack/setup-spack@v2.1.1
