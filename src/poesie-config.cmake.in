@@ -1,0 +1,23 @@
+#
+# poesie-config.cmake.in
+#
+
+set (POESIE_VERSION @POESIE_VERSION@)
+
+@PACKAGE_INIT@
+
+set_and_check (POESIE_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
+
+check_required_components (poesie)
+
+include (CMakeFindDependencyMacro)
+find_dependency (thallium)
+find_dependency (PkgConfig)
+find_dependency (nlohmann_json)
+
+# FIXME: add more dependencies if needed
+
+include ("${CMAKE_CURRENT_LIST_DIR}/poesie-targets.cmake")
+
+add_library (poesie::server ALIAS poesie-server)
+add_library (poesie::client ALIAS poesie-client)

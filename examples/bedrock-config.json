@@ -1,0 +1,18 @@
+{
+    "libraries": {
+        "poesie": "libpoesie-bedrock-module.so"
+    },
+    "providers": [
+        {
+            "type": "poesie",
+            "name": "my-poesie-provider",
+            "provider_id": 42,
+            "config": {
+                "vm": {
+                    "type": "dummy",
+                    "config": {}
+                }
+            }
+        }
+    ]
+}

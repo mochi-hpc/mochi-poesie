@@ -1,0 +1,30 @@
+spack:
+  specs:
+  - cmake
+  - pkgconfig
+  - mochi-thallium
+  - nlohmann-json
+  - nlohmann-json-schema-validator
+  - spdlog
+  - fmt
+  - mochi-bedrock-module-api
+  - lua-sol2
+  - python
+  - py-pybind11
+  - mono
+  - mruby
+  concretizer:
+    unify: true
+    reuse: true
+  modules:
+    prefix_inspections:
+      lib: [LD_LIBRARY_PATH]
+      lib64: [LD_LIBRARY_PATH]
+  packages:
+    mochi-thallium:
+      require: "@0.14.0:"
+    mruby:
+      require:
+      - cflags=-fPIC
+      - "@3.3.0:"
+
