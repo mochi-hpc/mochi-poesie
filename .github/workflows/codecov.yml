@@ -43,6 +43,9 @@ jobs:
                  -DENABLE_TESTS=ON \
                  -DENABLE_EXAMPLES=ON \
                  -DENABLE_BEDROCK=ON \
+                 -DENABLE_PYTHON=ON \
+                 -DENABLE_LUA=ON \
+                 -DENABLE_RUBY=ON \
                  -DCMAKE_BUILD_TYPE=Debug
         make
         ctest --output-on-failure
