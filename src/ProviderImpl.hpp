@@ -106,7 +106,7 @@ class ProviderImpl : public tl::provider<ProviderImpl> {
     }
 
     Result<bool> createVm(const std::string& vm_type,
-                                const json& vm_config) {
+                          const json& vm_config) {
 
         Result<bool> result;
 
