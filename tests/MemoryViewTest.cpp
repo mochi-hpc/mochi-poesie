@@ -80,7 +80,7 @@ TEST_CASE("MemoryView test", "[memory-view]") {
     }
 
     SECTION("Serialize MemoryView") {
-        std::vector<char> data{128};
+        std::vector<char> data(128);
         auto view1 = poesie::MemoryView{
             engine,
             data.data(),
@@ -94,7 +94,7 @@ TEST_CASE("MemoryView test", "[memory-view]") {
     }
 
     SECTION("Serialize MemoryView with dump") {
-        std::vector<char> data{128};
+        std::vector<char> data(128);
         auto view1 = poesie::MemoryView{
             engine,
             data.data(),
