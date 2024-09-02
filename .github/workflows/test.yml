@@ -18,6 +18,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Install ruby
+      run: |
+        apt install ruby3.0-dev
+
     - name: Setup spack
       uses: spack/setup-spack@v2.1.1
       with:
@@ -27,6 +31,10 @@ jobs:
       run: |
         git clone https://github.com/mochi-hpc/mochi-spack-packages
         spack -e tests repo add mochi-spack-packages
+
+    - name: Add Ruby as external
+      run: |
+        spack -e tests external find --not-buildable ruby
 
     - name: Install spack environment
       run: |
