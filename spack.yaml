@@ -22,6 +22,8 @@ spack:
   packages:
     mochi-thallium:
       require: "@0.14.0:"
+    mochi-bedrock-module-api:
+      require: "@0.2.0:"
     mruby:
       require:
       - cflags=-fPIC
