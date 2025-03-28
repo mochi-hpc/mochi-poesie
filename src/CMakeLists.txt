@@ -63,6 +63,10 @@ target_include_directories (poesie-server BEFORE PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 target_include_directories (poesie-server BEFORE PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+if (ENABLE_LUA)
+    target_include_directories (poesie-server PRIVATE ${LUA_INCLUDE_DIRS})
+endif ()
+
 set_target_properties (poesie-server
     PROPERTIES VERSION ${POESIE_VERSION}
     SOVERSION ${POESIE_VERSION_MAJOR})
